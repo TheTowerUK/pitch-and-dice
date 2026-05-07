@@ -20,13 +20,14 @@ const ZoneRow = ({ zoneKey, count, onInc, onDec }) => {
   const zone    = FIELD_ZONES[zoneKey];
   const atMax   = count >= zone.max;
   const atMin   = count <= 0;
+  const active  = count > 0;
 
   return (
-    <View style={styles.zoneRow}>
+    <View style={[styles.zoneRow, active && styles.zoneRowActive]}>
       <View style={styles.zoneInfo}>
         <Text style={styles.zoneIcon}>{zone.icon}</Text>
         <View>
-          <Text style={styles.zoneName}>{zone.label}</Text>
+          <Text style={[styles.zoneName, active && { color: COLOURS.gold }]}>{zone.label}</Text>
           <Text style={styles.zoneMax}>max {zone.max}</Text>
         </View>
       </View>
@@ -39,8 +40,8 @@ const ZoneRow = ({ zoneKey, count, onInc, onDec }) => {
           <Text style={styles.zoneBtnTxt}>−</Text>
         </TouchableOpacity>
 
-        <View style={styles.zoneCount}>
-          <Text style={styles.zoneCountTxt}>{count}</Text>
+        <View style={[styles.zoneCount, active && styles.zoneCountActive]}>
+          <Text style={[styles.zoneCountTxt, active && { color: COLOURS.gold }]}>{count}</Text>
         </View>
 
         <TouchableOpacity
@@ -55,7 +56,8 @@ const ZoneRow = ({ zoneKey, count, onInc, onDec }) => {
 };
 
 export const FieldSetupModal = ({ visible, currentOver, onConfirm }) => {
-  const [field, setField]   = useState({ ...DEFAULT_FIELD });
+  const [field, setField]               = useState({ ...DEFAULT_FIELD });
+  const [activePreset, setActivePreset] = useState(null);
   const scaleAnim = useRef(new Animated.Value(0.9)).current;
 
   useEffect(() => {
@@ -72,6 +74,7 @@ export const FieldSetupModal = ({ visible, currentOver, onConfirm }) => {
   const valid     = isValidField(field);
 
   const inc = (zone) => {
+    setActivePreset(null);
     const z = FIELD_ZONES[zone];
     if (field[zone] >= z.max) return;
     if (remaining <= 0) return;
@@ -79,11 +82,15 @@ export const FieldSetupModal = ({ visible, currentOver, onConfirm }) => {
   };
 
   const dec = (zone) => {
+    setActivePreset(null);
     if (field[zone] <= 0) return;
     setField(f => ({ ...f, [zone]: f[zone] - 1 }));
   };
 
-  const applyPreset = (preset) => setField({ ...preset.field });
+  const applyPreset = (preset) => {
+    setField({ ...preset.field });
+    setActivePreset(preset.key);
+  };
 
   return (
     <Modal transparent visible={visible} animationType="fade" statusBarTranslucent>
@@ -108,10 +115,16 @@ export const FieldSetupModal = ({ visible, currentOver, onConfirm }) => {
             {FIELD_PRESETS.map(p => (
               <TouchableOpacity
                 key={p.key}
-                style={styles.presetBtn}
+                style={[
+                  styles.presetBtn,
+                  activePreset === p.key && styles.presetBtnActive,
+                ]}
                 onPress={() => applyPreset(p)}
               >
-                <Text style={styles.presetLabel}>{p.label}</Text>
+                <Text style={[
+                  styles.presetLabel,
+                  activePreset === p.key && { color: COLOURS.gold },
+                ]}>{p.label}</Text>
                 <Text style={styles.presetDesc}>{p.description}</Text>
               </TouchableOpacity>
             ))}
@@ -214,6 +227,10 @@ const styles = StyleSheet.create({
     borderWidth:     1,
     borderColor:     'rgba(255,255,255,0.08)',
   },
+  presetBtnActive: {
+    backgroundColor: 'rgba(212,160,23,0.12)',
+    borderColor:     COLOURS.gold,
+  },
   presetLabel: {
     fontFamily:   FONTS.display,
     fontSize:     SIZES.sm,
@@ -236,6 +253,10 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255,255,255,0.05)',
   },
+  zoneRowActive: {
+    backgroundColor: 'rgba(212,160,23,0.06)',
+    borderBottomColor: 'rgba(212,160,23,0.15)',
+  },
   zoneInfo: { flexDirection: 'row', alignItems: 'center', gap: SPACE.sm, flex: 1 },
   zoneIcon: { fontSize: 18 },
   zoneName: { fontFamily: FONTS.display, fontSize: SIZES.md, color: COLOURS.cream, letterSpacing: 1 },
@@ -253,6 +274,11 @@ const styles = StyleSheet.create({
   zoneCount: {
     width:         32,
     alignItems:    'center',
+  },
+  zoneCountActive: {
+    backgroundColor: 'rgba(212,160,23,0.12)',
+    borderRadius:    4,
+    paddingHorizontal: 4,
   },
   zoneCountTxt: { fontFamily: FONTS.display, fontSize: SIZES.xl, color: COLOURS.gold },
   confirmBtn: {

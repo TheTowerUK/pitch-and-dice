@@ -155,6 +155,71 @@ export const WORLD_TEAMS = {
   },
 };
 
+const ROLE_MAP = {
+  batter: 'bat',
+  batsman: 'bat',
+  bat: 'bat',
+  bowler: 'bowl',
+  bowl: 'bowl',
+  'all-rounder': 'allrounder',
+  allrounder: 'allrounder',
+  'all rounder': 'allrounder',
+  wicketkeeper: 'wk',
+  'wicket-keeper': 'wk',
+  wk: 'wk',
+};
+
+const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+
+const normalizeSkill = (value) => {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return 5;
+  // Support 1-100 authored files by scaling to the engine's 1-10 range.
+  if (n > 10) return clamp(Math.round(n / 10), 1, 10);
+  return clamp(Math.round(n), 1, 10);
+};
+
+const normalizeRole = (value) => {
+  const key = String(value || '').trim().toLowerCase();
+  return ROLE_MAP[key] || 'bat';
+};
+
+const normalizeFictionalTeams = (inputTeams) => {
+  if (!Array.isArray(inputTeams)) return {};
+  return inputTeams.reduce((acc, team, teamIdx) => {
+    if (!team?.id || !team?.name || !Array.isArray(team?.players)) return acc;
+    const normalizedPlayers = team.players.slice(0, 11).map((player, idx) => ({
+      id: player?.id || `${team.id}_${idx + 1}`,
+      name: player?.name || `Player ${idx + 1}`,
+      role: normalizeRole(player?.role),
+      battingSkill: normalizeSkill(player?.battingSkill),
+      bowlingSkill: normalizeSkill(player?.bowlingSkill),
+      position: idx + 1,
+    }));
+    if (normalizedPlayers.length < 11) return acc;
+    acc[team.id] = {
+      id: team.id,
+      name: team.name,
+      flag: team.flag || '🏏',
+      colour: team.colour || '#4b5563',
+      accent: team.accent || '#d4a017',
+      players: normalizedPlayers,
+      shortName: team.shortName || team.name.slice(0, 3).toUpperCase(),
+      source: 'fictional',
+      sortOrder: 100 + teamIdx,
+    };
+    return acc;
+  }, {});
+};
+
+// NOTE: file name currently "fictionalTteams.json" in repo.
+// Kept as-is for now so integration works immediately.
+const FICTIONAL_TEAMS = normalizeFictionalTeams(
+  require('./data/fictionalTteams.json')
+);
+
+Object.assign(WORLD_TEAMS, FICTIONAL_TEAMS);
+
 export const TEAM_KEYS  = Object.keys(WORLD_TEAMS);
 export const TEAM_LIST  = Object.values(WORLD_TEAMS);
 

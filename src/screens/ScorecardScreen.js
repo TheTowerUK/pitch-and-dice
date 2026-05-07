@@ -1,243 +1,264 @@
 // ═══════════════════════════════════════════════════════
 //  ScorecardScreen.js
-//  Live innings scorecard showing all batsmen,
-//  fall of wickets, and bowling figures.
+//  Full batting / bowling card for in-match view.
 // ═══════════════════════════════════════════════════════
 
 import React from 'react';
 import {
-  View, Text, ScrollView, TouchableOpacity,
-  StyleSheet,
+  View, Text, ScrollView, TouchableOpacity, StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLOURS, FONTS, SIZES, SPACE } from '../constants/theme';
 import {
-  getScorecardRows, getYetToBat,
-  getStrikeRate, formatDismissal,
+  getScorecardRows,
+  getYetToBat,
+  getStrikeRate,
 } from '../engine/teamEngine';
-import { ROLE_CONFIG } from '../engine/teamsData';
 
-const ScorecardRow = ({ entry, isBatting }) => {
+const BattingRow = ({ entry }) => {
   const sr = getStrikeRate(entry.runs, entry.balls);
+  const suffix = entry.batting ? '*' : '';
+  const outText = entry.dismissal
+    ? entry.dismissal
+    : entry.batting
+      ? 'not out'
+      : '—';
+
   return (
-    <View style={[styles.row, isBatting && styles.rowActive]}>
-      <View style={styles.playerCol}>
-        <Text style={[styles.playerName, isBatting && { color: COLOURS.gold }]}>
-          {entry.name}
-          {isBatting && <Text style={styles.batting}> *</Text>}
+    <View style={styles.batRow}>
+      <View style={styles.batNameCol}>
+        <Text style={styles.batName} numberOfLines={1}>
+          {entry.name.split(' ').pop() || entry.name}{suffix}
         </Text>
-        <Text style={styles.dismissal}>{formatDismissal(entry.dismissal)}</Text>
+        <Text style={styles.batOut} numberOfLines={1}>{outText}</Text>
       </View>
-      <Text style={styles.statCell}>{entry.runs}</Text>
-      <Text style={styles.statCell}>{entry.balls}</Text>
-      <Text style={styles.statCell}>{entry.fours}</Text>
-      <Text style={styles.statCell}>{entry.sixes}</Text>
-      <Text style={[styles.statCell, styles.srCell]}>{sr}</Text>
+      <Text style={styles.batNum}>{entry.runs}</Text>
+      <Text style={styles.batNum}>{entry.balls}</Text>
+      <Text style={styles.batNum}>{entry.fours}</Text>
+      <Text style={styles.batNum}>{entry.sixes}</Text>
+      <Text style={styles.batNumSr}>{sr}</Text>
     </View>
   );
 };
 
-export const ScorecardScreen = ({ battingSquad, bowlingSquad, runs, wickets, overDisplay, onBack }) => {
-  if (!battingSquad) return null;
+export const ScorecardScreen = ({
+  battingSquad, bowlingSquad, runs, wickets, overDisplay, onBack,
+  embedded = false,
+}) => {
+  const batted = battingSquad ? getScorecardRows(battingSquad) : [];
+  const ytb    = battingSquad ? getYetToBat(battingSquad)      : [];
 
-  const batted   = getScorecardRows(battingSquad);
-  const yetToBat = getYetToBat(battingSquad);
+  const bowlingRows = bowlingSquad
+    ? bowlingSquad.players
+        .map((p) => ({
+          name:    p.name,
+          overs:   bowlingSquad.oversBowled?.[p.id]  || 0,
+          runs:    bowlingSquad.runsConceded?.[p.id]  || 0,
+          wickets: bowlingSquad.wicketsTaken?.[p.id]  || 0,
+        }))
+        .filter((r) => r.overs > 0)
+        .sort((a, b) => b.wickets - a.wickets || a.runs - b.runs)
+    : [];
 
-  return (
-    <SafeAreaView style={styles.safe}>
-
-      <View style={styles.header}>
-        <TouchableOpacity onPress={onBack} style={styles.backBtn}>
-          <Text style={styles.backText}>← BACK</Text>
-        </TouchableOpacity>
-        <Text style={styles.title}>SCORECARD</Text>
-        <View style={styles.placeholder} />
-      </View>
-
-      {/* Innings summary */}
-      <View style={styles.summary}>
-        <Text style={styles.summaryScore}>
-          {battingSquad.teamName} {runs}/{wickets}
-        </Text>
-        <Text style={styles.summaryOvers}>({overDisplay} ov)</Text>
-      </View>
-
-      <ScrollView contentContainerStyle={styles.scroll}>
-
-        {/* Column headers */}
-        <View style={styles.headerRow}>
-          <Text style={[styles.headerCell, styles.playerCol]}>BATSMAN</Text>
-          <Text style={styles.headerCell}>R</Text>
-          <Text style={styles.headerCell}>B</Text>
-          <Text style={styles.headerCell}>4s</Text>
-          <Text style={styles.headerCell}>6s</Text>
-          <Text style={[styles.headerCell, styles.srCell]}>SR</Text>
+  const body = (
+    <>
+      {!embedded && (
+        <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.backBtn}
+            onPress={onBack}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.backText}>← BACK</Text>
+          </TouchableOpacity>
+          <Text style={styles.title}>SCORECARD</Text>
         </View>
+      )}
 
-        {/* Batted rows */}
-        {batted.map(entry => (
-          <ScorecardRow
-            key={entry.playerId}
-            entry={entry}
-            isBatting={entry.batting}
-          />
-        ))}
+      <View style={styles.summary}>
+        <Text style={styles.teamName}>
+          {battingSquad?.teamName || 'Batting'}
+          {battingSquad?.flag ? ` ${battingSquad.flag}` : ''}
+        </Text>
+        <Text style={styles.summaryScore}>
+          {runs}<Text style={styles.summaryWkts}>/{wickets}</Text>
+          <Text style={styles.summaryOv}>  ·  OV {overDisplay}</Text>
+        </Text>
+      </View>
 
-        {/* Yet to bat */}
-        {yetToBat.length > 0 && (
-          <>
-            <Text style={styles.sectionLabel}>YET TO BAT</Text>
-            {yetToBat.map(entry => (
-              <View key={entry.playerId} style={styles.yetRow}>
-                <Text style={styles.yetName}>{entry.name}</Text>
+      {!battingSquad && (
+        <Text style={styles.empty}>No squad data for this match.</Text>
+      )}
+
+      {battingSquad && (
+        <View style={embedded ? styles.embedWrap : styles.scroll}>
+          {!embedded ? (
+            <ScrollView
+              style={styles.scroll}
+              contentContainerStyle={styles.scrollContent}
+              showsVerticalScrollIndicator={false}
+            >
+              <Text style={styles.section}>BATTING</Text>
+              <View style={styles.tableHead}>
+                <Text style={[styles.th, styles.thName]}>BATTER</Text>
+                <Text style={styles.th}>R</Text>
+                <Text style={styles.th}>B</Text>
+                <Text style={styles.th}>4s</Text>
+                <Text style={styles.th}>6s</Text>
+                <Text style={styles.thSr}>SR</Text>
               </View>
-            ))}
-          </>
-        )}
-
-        {/* Bowling figures */}
-        {bowlingSquad && (
-          <>
-            <Text style={styles.sectionLabel}>BOWLING</Text>
-            <View style={styles.headerRow}>
-              <Text style={[styles.headerCell, styles.playerCol]}>BOWLER</Text>
-              <Text style={styles.headerCell}>O</Text>
-              <Text style={styles.headerCell}>W</Text>
-            </View>
-            {bowlingSquad.players
-              .filter(p => (bowlingSquad.oversBowled[p.id] || 0) > 0)
-              .map(p => (
-                <View key={p.id} style={styles.row}>
-                  <Text style={[styles.playerName, styles.playerCol]}>{p.name}</Text>
-                  <Text style={styles.statCell}>{bowlingSquad.oversBowled[p.id] || 0}</Text>
-                  <Text style={styles.statCell}>
-                    {bowlingSquad.scorecard?.filter(e => e.dismissal?.includes(p.name)).length || '—'}
-                  </Text>
-                </View>
+              {batted.map((e) => (
+                <BattingRow key={e.playerId} entry={e} />
               ))}
-          </>
-        )}
 
-      </ScrollView>
+              {ytb.length > 0 && (
+                <>
+                  <Text style={styles.ytbLabel}>Yet to bat</Text>
+                  <Text style={styles.ytbNames}>
+                    {ytb.map((e) => e.name.split(' ').pop() || e.name).join(' · ')}
+                  </Text>
+                </>
+              )}
+
+              {bowlingRows.length > 0 && (
+                <>
+                  <Text style={[styles.section, styles.sectionPad]}>BOWLING</Text>
+                  <Text style={styles.bowlTeam}>
+                    {bowlingSquad.teamName}{bowlingSquad.flag ? ` ${bowlingSquad.flag}` : ''}
+                  </Text>
+                  <View style={styles.bowlHead}>
+                    <Text style={[styles.bth, styles.bthName]}>BOWLER</Text>
+                    <Text style={styles.bth}>OV</Text>
+                    <Text style={styles.bth}>R</Text>
+                    <Text style={styles.bth}>W</Text>
+                    <Text style={styles.bthEcon}>ECON</Text>
+                  </View>
+                  {bowlingRows.map((r) => {
+                    const econ = r.overs > 0 ? (r.runs / r.overs).toFixed(1) : '—';
+                    return (
+                      <View key={r.name} style={styles.bowlRow}>
+                        <Text style={styles.bowlName} numberOfLines={1}>
+                          {r.name.split(' ').pop()}
+                        </Text>
+                        <Text style={styles.bowlNum}>{r.overs}</Text>
+                        <Text style={styles.bowlNum}>{r.runs}</Text>
+                        <Text style={[styles.bowlNum, r.wickets > 0 && { color: COLOURS.wicket }]}>
+                          {r.wickets}
+                        </Text>
+                        <Text style={styles.bowlEcon}>{econ}</Text>
+                      </View>
+                    );
+                  })}
+                </>
+              )}
+            </ScrollView>
+          ) : (
+            <>
+              <Text style={styles.section}>BATTING</Text>
+              <View style={styles.tableHead}>
+                <Text style={[styles.th, styles.thName]}>BATTER</Text>
+                <Text style={styles.th}>R</Text>
+                <Text style={styles.th}>B</Text>
+                <Text style={styles.th}>4s</Text>
+                <Text style={styles.th}>6s</Text>
+                <Text style={styles.thSr}>SR</Text>
+              </View>
+              {batted.map((e) => (
+                <BattingRow key={e.playerId} entry={e} />
+              ))}
+
+              {ytb.length > 0 && (
+                <>
+                  <Text style={styles.ytbLabel}>Yet to bat</Text>
+                  <Text style={styles.ytbNames}>
+                    {ytb.map((e) => e.name.split(' ').pop() || e.name).join(' · ')}
+                  </Text>
+                </>
+              )}
+
+              {bowlingRows.length > 0 && (
+                <>
+                  <Text style={[styles.section, styles.sectionPad]}>BOWLING</Text>
+                  <Text style={styles.bowlTeam}>
+                    {bowlingSquad.teamName}{bowlingSquad.flag ? ` ${bowlingSquad.flag}` : ''}
+                  </Text>
+                  <View style={styles.bowlHead}>
+                    <Text style={[styles.bth, styles.bthName]}>BOWLER</Text>
+                    <Text style={styles.bth}>OV</Text>
+                    <Text style={styles.bth}>R</Text>
+                    <Text style={styles.bth}>W</Text>
+                    <Text style={styles.bthEcon}>ECON</Text>
+                  </View>
+                  {bowlingRows.map((r) => {
+                    const econ = r.overs > 0 ? (r.runs / r.overs).toFixed(1) : '—';
+                    return (
+                      <View key={r.name} style={styles.bowlRow}>
+                        <Text style={styles.bowlName} numberOfLines={1}>
+                          {r.name.split(' ').pop()}
+                        </Text>
+                        <Text style={styles.bowlNum}>{r.overs}</Text>
+                        <Text style={styles.bowlNum}>{r.runs}</Text>
+                        <Text style={[styles.bowlNum, r.wickets > 0 && { color: COLOURS.wicket }]}>
+                          {r.wickets}
+                        </Text>
+                        <Text style={styles.bowlEcon}>{econ}</Text>
+                      </View>
+                    );
+                  })}
+                </>
+              )}
+            </>
+          )}
+        </View>
+      )}
+    </>
+  );
+
+  return embedded ? (
+    <View>{body}</View>
+  ) : (
+    <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
+      {body}
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  safe:   { flex: 1, backgroundColor: COLOURS.slate },
-  header: {
-    backgroundColor:   COLOURS.ink,
-    flexDirection:     'row',
-    alignItems:        'center',
-    paddingHorizontal: SPACE.lg,
-    paddingVertical:   SPACE.md,
-    borderBottomWidth: 2,
-    borderBottomColor: 'rgba(212,160,23,0.3)',
-    justifyContent:    'space-between',
-  },
-  backBtn:     { minWidth: 60 },
-  backText: {
-    fontFamily:   FONTS.display,
-    fontSize:     SIZES.md,
-    color:        COLOURS.gold,
-    letterSpacing: 2,
-  },
-  title: {
-    fontFamily:   FONTS.display,
-    fontSize:     SIZES.xl,
-    color:        COLOURS.cream,
-    letterSpacing: 4,
-  },
-  placeholder: { minWidth: 60 },
-
-  summary: {
-    backgroundColor:  COLOURS.ink,
-    paddingHorizontal: SPACE.lg,
-    paddingVertical:  SPACE.md,
-    flexDirection:    'row',
-    alignItems:       'baseline',
-    gap:              SPACE.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.07)',
-  },
-  summaryScore: {
-    fontFamily:   FONTS.display,
-    fontSize:     32,
-    color:        COLOURS.cream,
-    letterSpacing: 2,
-  },
-  summaryOvers: {
-    fontFamily: FONTS.mono,
-    fontSize:   SIZES.sm,
-    color:      COLOURS.dot,
-  },
-
-  scroll: { padding: SPACE.lg, paddingBottom: SPACE.xxl },
-
-  headerRow: {
-    flexDirection:     'row',
-    paddingVertical:   SPACE.xs,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.1)',
-    marginBottom:      SPACE.xs,
-  },
-  headerCell: {
-    fontFamily:   FONTS.mono,
-    fontSize:     SIZES.xs,
-    color:        COLOURS.dot,
-    letterSpacing: 1,
-    textAlign:    'right',
-    width:        32,
-  },
-
-  row: {
-    flexDirection:     'row',
-    alignItems:        'center',
-    paddingVertical:   SPACE.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.04)',
-  },
-  rowActive: {
-    backgroundColor: 'rgba(212,160,23,0.05)',
-  },
-  playerCol: { flex: 1, paddingRight: SPACE.sm },
-  playerName: {
-    fontFamily:   FONTS.mono,
-    fontSize:     SIZES.sm,
-    color:        COLOURS.cream,
-  },
-  batting: { color: COLOURS.gold },
-  dismissal: {
-    fontFamily: FONTS.mono,
-    fontSize:   SIZES.xs,
-    color:      COLOURS.dot,
-    marginTop:  1,
-  },
-  statCell: {
-    fontFamily:   FONTS.display,
-    fontSize:     SIZES.md,
-    color:        COLOURS.cream,
-    textAlign:    'right',
-    width:        32,
-    letterSpacing: 1,
-  },
-  srCell: { width: 44 },
-
-  sectionLabel: {
-    fontFamily:   FONTS.mono,
-    fontSize:     SIZES.xs,
-    color:        COLOURS.dot,
-    letterSpacing: 3,
-    marginTop:    SPACE.lg,
-    marginBottom: SPACE.sm,
-    paddingBottom: SPACE.xs,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.08)',
-  },
-  yetRow: { paddingVertical: SPACE.xs },
-  yetName: {
-    fontFamily: FONTS.mono,
-    fontSize:   SIZES.sm,
-    color:      COLOURS.dot,
-  },
+  safe:         { flex: 1, backgroundColor: COLOURS.ink },
+  header:       { flexDirection: 'row', alignItems: 'center', paddingHorizontal: SPACE.lg, paddingVertical: SPACE.sm, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.08)' },
+  backBtn:      { marginRight: SPACE.md },
+  backText:     { fontFamily: FONTS.display, fontSize: SIZES.md, color: COLOURS.gold, letterSpacing: 2 },
+  title:        { fontFamily: FONTS.display, fontSize: SIZES.lg, color: COLOURS.cream, letterSpacing: 4 },
+  summary:      { paddingHorizontal: SPACE.lg, paddingVertical: SPACE.md },
+  teamName:     { fontFamily: FONTS.mono, fontSize: SIZES.xs, color: COLOURS.dot, letterSpacing: 2, marginBottom: SPACE.xs },
+  summaryScore: { fontFamily: FONTS.display, fontSize: 36, color: COLOURS.cream, letterSpacing: 1 },
+  summaryWkts:  { color: COLOURS.red, fontSize: 28 },
+  summaryOv:    { fontFamily: FONTS.mono, fontSize: SIZES.md, color: COLOURS.dot },
+  empty:        { fontFamily: FONTS.mono, fontSize: SIZES.sm, color: COLOURS.dot, paddingHorizontal: SPACE.lg },
+  scroll:       { flex: 1 },
+  embedWrap:   { paddingBottom: SPACE.md },
+  scrollContent: { paddingHorizontal: SPACE.lg, paddingBottom: SPACE.xxl },
+  section:      { fontFamily: FONTS.display, fontSize: SIZES.md, color: COLOURS.gold, letterSpacing: 3, marginTop: SPACE.md, marginBottom: SPACE.sm },
+  sectionPad:   { marginTop: SPACE.xl },
+  tableHead:    { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: 'rgba(212,160,23,0.25)', paddingBottom: SPACE.xs, marginBottom: SPACE.xs },
+  th:           { fontFamily: FONTS.mono, fontSize: 10, color: COLOURS.dot, width: 32, textAlign: 'center' },
+  thName:       { flex: 1, textAlign: 'left', width: undefined },
+  thSr:         { fontFamily: FONTS.mono, fontSize: 10, color: COLOURS.dot, width: 44, textAlign: 'right' },
+  batRow:       { flexDirection: 'row', alignItems: 'center', paddingVertical: SPACE.sm, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.06)' },
+  batNameCol:   { flex: 1, marginRight: SPACE.sm },
+  batName:      { fontFamily: FONTS.display, fontSize: SIZES.md, color: COLOURS.cream, letterSpacing: 1 },
+  batOut:       { fontFamily: FONTS.mono, fontSize: 10, color: COLOURS.boundary, marginTop: 2 },
+  batNum:       { fontFamily: FONTS.mono, fontSize: SIZES.sm, color: COLOURS.dot, width: 32, textAlign: 'center' },
+  batNumSr:     { fontFamily: FONTS.mono, fontSize: SIZES.sm, color: COLOURS.dot, width: 44, textAlign: 'right' },
+  ytbLabel:     { fontFamily: FONTS.mono, fontSize: 10, color: COLOURS.dot, marginTop: SPACE.lg, letterSpacing: 2 },
+  ytbNames:     { fontFamily: FONTS.mono, fontSize: SIZES.xs, color: COLOURS.dot, opacity: 0.85, marginTop: SPACE.xs, lineHeight: 18 },
+  bowlTeam:     { fontFamily: FONTS.mono, fontSize: SIZES.xs, color: COLOURS.dot, marginBottom: SPACE.sm },
+  bowlHead:     { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: 'rgba(212,160,23,0.25)', paddingBottom: SPACE.xs, marginBottom: SPACE.xs },
+  bth:          { fontFamily: FONTS.mono, fontSize: 10, color: COLOURS.dot, width: 40, textAlign: 'center', letterSpacing: 1 },
+  bthName:      { flex: 1, textAlign: 'left', width: undefined },
+  bthEcon:      { fontFamily: FONTS.mono, fontSize: 10, color: COLOURS.dot, width: 48, textAlign: 'right', letterSpacing: 1 },
+  bowlRow:      { flexDirection: 'row', alignItems: 'center', paddingVertical: SPACE.xs, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.06)' },
+  bowlName:     { fontFamily: FONTS.display, fontSize: SIZES.sm, color: COLOURS.cream, flex: 1, marginRight: SPACE.md, letterSpacing: 1 },
+  bowlNum:      { fontFamily: FONTS.mono, fontSize: SIZES.sm, color: COLOURS.cream, width: 40, textAlign: 'center' },
+  bowlEcon:     { fontFamily: FONTS.mono, fontSize: SIZES.sm, color: COLOURS.dot, width: 48, textAlign: 'right' },
 });

@@ -49,14 +49,16 @@ export const BOWLER_PRESETS = [
 
 // ─────────────────────────────────────────
 //  SKILL MODIFIER CALCULATOR
-//  +1 per 2 skill points above 5
-//  Skill 5 = 0, Skill 6 = 0, Skill 7 = +1
-//  Skill 8 = +1, Skill 9 = +2, Skill 10 = +2
+//  Symmetric mapping around skill 5:
+//  1-2 => -2, 3-4 => -1, 5-6 => 0, 7-8 => +1, 9-10 => +2
+//  This keeps neutral players stable while making large mismatches matter.
 // ─────────────────────────────────────────
 export const getSkillMod = (skill) => {
-  if (skill <= 5) return 0;
-  // Skill 7-8: +1, Skill 9-10: +2 — meaningful but capped by ±1 total cap
-  return Math.floor((skill - 5) / 2);
+  if (skill <= 2) return -2;
+  if (skill <= 4) return -1;
+  if (skill <= 6) return 0;
+  if (skill <= 8) return 1;
+  return 2;
 };
 
 // ─────────────────────────────────────────

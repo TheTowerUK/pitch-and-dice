@@ -1,64 +1,203 @@
 // ─────────────────────────────────────────
 //  WicketModal.js
-//  D6 sub-roll dismissal modal
+//  Dramatic wicket reveal with DRS challenge.
+//  DRS available on LBW only — one review
+//  per innings, D6 resolution.
 // ─────────────────────────────────────────
 
-import React, { useEffect, useRef } from 'react';
-import { Modal, View, Text, TouchableOpacity, Animated, StyleSheet } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  Modal, View, Text, TouchableOpacity,
+  Animated, StyleSheet,
+} from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { COLOURS, FONTS, SIZES, SPACE } from '../constants/theme';
-import { resolveWicket } from '../engine/diceEngine';
+import { rollDie } from '../engine/diceEngine';
+import { playSoundForDRS } from '../engine/soundEngine';
 
-export const WicketModal = ({ visible, onConfirm }) => {
+// ─────────────────────────────────────────
+//  DRS RESOLUTION
+// ─────────────────────────────────────────
+const resolveDRS = () => {
+  const roll = rollDie(6);
+  if (roll <= 2) return {
+    roll,
+    outcome:  'upheld',
+    label:    'WICKET STANDS',
+    detail:   'Umpire\'s decision upheld. Hitting the stumps. OUT!',
+    colour:   COLOURS.red,
+    icon:     '📺',
+    overturned: false,
+    reviewLost: true,
+  };
+  if (roll <= 4) return {
+    roll,
+    outcome:  'umpires_call',
+    label:    'UMPIRE\'S CALL',
+    detail:   'Ball-tracking shows umpire\'s call. Decision stands.',
+    colour:   COLOURS.boundary,
+    icon:     '⚖️',
+    overturned: false,
+    reviewLost: true,
+  };
+  return {
+    roll,
+    outcome:  'overturned',
+    label:    'NOT OUT!',
+    detail:   'Overturned! Ball missing the stumps. Batsman survives!',
+    colour:   COLOURS.runs1,
+    icon:     '✅',
+    overturned: true,
+    reviewLost: false,
+  };
+};
+
+export const WicketModal = ({ visible, wicket, drsReviews, onConfirm, onDRS }) => {
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
-  const [wicket, setWicket] = React.useState(null);
+  const drsAnim   = useRef(new Animated.Value(0)).current;
+  const [drsResult, setDrsResult]     = useState(null);
+  const [reviewing,  setReviewing]    = useState(false);
 
   useEffect(() => {
-    if (visible) {
+    if (visible && wicket) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-      const result = resolveWicket();
-      setWicket(result);
+      setDrsResult(null);
+      setReviewing(false);
       scaleAnim.setValue(0.8);
       Animated.spring(scaleAnim, {
-        toValue: 1,
-        friction: 6,
-        tension: 100,
-        useNativeDriver: true,
-      }).start();
+        toValue: 1.02, friction: 5, tension: 120, useNativeDriver: true,
+      }).start(() => {
+        Animated.spring(scaleAnim, {
+          toValue: 1, friction: 8, tension: 80, useNativeDriver: true,
+        }).start();
+      });
     }
-  }, [visible]);
+  }, [visible, wicket]);
 
-  if (!wicket && !visible) return null;
+  const handleReview = () => {
+    setReviewing(true);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+
+    // Dramatic pause before revealing
+    setTimeout(() => {
+      const result = resolveDRS();
+      setDrsResult(result);
+      drsAnim.setValue(0);
+      Animated.spring(drsAnim, {
+        toValue: 1, friction: 6, tension: 100, useNativeDriver: true,
+      }).start();
+
+      if (result.overturned) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        playSoundForDRS(true);   // sarcastic cheer
+      } else {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        playSoundForDRS(false);  // drs_lose groan
+      }
+    }, 1200);
+  };
+
+  const handleContinue = () => {
+    onConfirm(drsResult);
+  };
+
+  if (!visible || !wicket) return null;
+
+  const canDRS     = wicket.drs && drsReviews > 0 && !drsResult;
+  const showDRS    = wicket.drs;
 
   return (
-    <Modal
-      transparent
-      visible={visible}
-      animationType="fade"
-      statusBarTranslucent
-    >
+    <Modal transparent visible={visible} animationType="fade" statusBarTranslucent>
       <View style={styles.overlay}>
         <Animated.View style={[styles.card, { transform: [{ scale: scaleAnim }] }]}>
 
-          <Text style={styles.title}>WICKET!</Text>
-          <Text style={styles.sub}>D6 dismissal roll</Text>
+          {/* Header */}
+          <View style={styles.header}>
+            <Text style={styles.title}>WICKET!</Text>
+          </View>
 
-          {wicket && (
-            <>
+          {/* Die roll */}
+          <View style={styles.dieRow}>
+            <View style={styles.diePip}>
               <Text style={styles.dieVal}>{wicket.roll}</Text>
-              <Text style={styles.wicketType}>{wicket.type}</Text>
-              <Text style={styles.detail}>{wicket.detail}</Text>
-              {wicket.drs && (
-                <View style={styles.drsBadge}>
-                  <Text style={styles.drsText}>DRS AVAILABLE</Text>
-                </View>
-              )}
-            </>
+              <Text style={styles.dieLabel}>D6</Text>
+            </View>
+          </View>
+
+          {/* Dismissal type */}
+          <Text style={styles.wicketType}>{wicket.type}</Text>
+          <Text style={styles.detail}>{wicket.detail}</Text>
+
+          {/* DRS review result */}
+          {reviewing && !drsResult && (
+            <View style={styles.drsReviewing}>
+              <Text style={styles.drsReviewingText}>📺  REVIEWING...</Text>
+            </View>
           )}
 
-          <TouchableOpacity style={styles.btn} onPress={onConfirm} activeOpacity={0.8}>
-            <Text style={styles.btnText}>CONTINUE →</Text>
-          </TouchableOpacity>
+          {drsResult && (
+            <Animated.View style={[
+              styles.drsResult,
+              { borderColor: drsResult.colour, opacity: drsAnim,
+                transform: [{ scale: drsAnim }] },
+            ]}>
+              <Text style={styles.drsIcon}>{drsResult.icon}</Text>
+              <Text style={[styles.drsLabel, { color: drsResult.colour }]}>
+                {drsResult.label}
+              </Text>
+              <Text style={styles.drsDetail}>{drsResult.detail}</Text>
+              <View style={styles.drsDie}>
+                <Text style={styles.drsDieVal}>{drsResult.roll}</Text>
+                <Text style={styles.drsDieLabel}>D6</Text>
+              </View>
+              {!drsResult.reviewLost && (
+                <Text style={styles.drsReviewSaved}>Review retained</Text>
+              )}
+            </Animated.View>
+          )}
+
+          {/* DRS badge — shown when eligible */}
+          {showDRS && !reviewing && (
+            <View style={[
+              styles.drsBadge,
+              !canDRS && styles.drsBadgeUsed,
+            ]}>
+              <Text style={[styles.drsText, !canDRS && { color: COLOURS.dot }]}>
+                {canDRS
+                  ? `⚡ DRS AVAILABLE · ${drsReviews} review${drsReviews !== 1 ? 's' : ''} remaining`
+                  : '📺 DRS UNAVAILABLE — no reviews left'
+                }
+              </Text>
+            </View>
+          )}
+
+          {/* Action buttons */}
+          <View style={styles.btnRow}>
+            {canDRS && !reviewing && (
+              <TouchableOpacity
+                style={styles.drsBtn}
+                onPress={handleReview}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.drsBtnText}>REVIEW →</Text>
+              </TouchableOpacity>
+            )}
+
+            {(!reviewing || drsResult) && (
+              <TouchableOpacity
+                style={[
+                  styles.continueBtn,
+                  drsResult?.overturned && { backgroundColor: COLOURS.runs1 },
+                ]}
+                onPress={handleContinue}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.continueBtnText}>
+                  {drsResult?.overturned ? 'NOT OUT — CONTINUE →' : 'ACCEPT — CONTINUE →'}
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
 
         </Animated.View>
       </View>
@@ -68,83 +207,196 @@ export const WicketModal = ({ visible, onConfirm }) => {
 
 const styles = StyleSheet.create({
   overlay: {
-    flex: 1,
-    backgroundColor: COLOURS.overlay,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: SPACE.xl,
+    flex:            1,
+    backgroundColor: 'rgba(0,0,0,0.88)',
+    alignItems:      'center',
+    justifyContent:  'center',
+    padding:         SPACE.xl,
   },
   card: {
     backgroundColor: COLOURS.ink,
-    borderWidth: 2,
-    borderColor: COLOURS.wicket,
-    borderRadius: 6,
-    padding: SPACE.xxl,
-    width: '100%',
-    maxWidth: 360,
-    alignItems: 'center',
+    borderWidth:     2,
+    borderColor:     COLOURS.wicket,
+    borderRadius:    6,
+    width:           '100%',
+    maxWidth:        380,
+    overflow:        'hidden',
+  },
+  header: {
+    backgroundColor: COLOURS.wicket,
+    width:           '100%',
+    alignItems:      'center',
+    paddingVertical: SPACE.md,
   },
   title: {
-    fontFamily: FONTS.display,
-    fontSize: 40,
-    letterSpacing: 5,
-    color: COLOURS.wicket,
-    marginBottom: SPACE.xs,
+    fontFamily:    FONTS.display,
+    fontSize:      36,
+    letterSpacing: 8,
+    color:         COLOURS.white,
   },
-  sub: {
-    fontFamily: FONTS.mono,
-    fontSize: SIZES.sm,
-    color: COLOURS.dot,
-    letterSpacing: 2,
-    marginBottom: SPACE.lg,
+  dieRow: {
+    paddingVertical: SPACE.lg,
+    alignItems:      'center',
+  },
+  diePip: {
+    width:           96,
+    height:          96,
+    borderRadius:    12,
+    borderWidth:     2,
+    borderColor:     COLOURS.wicket,
+    alignItems:      'center',
+    justifyContent:  'center',
+    backgroundColor: 'rgba(142,68,173,0.12)',
+    paddingVertical: 8,
   },
   dieVal: {
     fontFamily: FONTS.display,
-    fontSize: 72,
-    color: COLOURS.wicket,
-    lineHeight: 76,
-    marginBottom: SPACE.sm,
+    fontSize:   40,
+    color:      COLOURS.wicket,
+    lineHeight: 44,
+  },
+  dieLabel: {
+    fontFamily:    FONTS.mono,
+    fontSize:      SIZES.xs,
+    color:         COLOURS.dot,
+    letterSpacing: 2,
+    marginTop:     2,
   },
   wicketType: {
-    fontFamily: FONTS.display,
-    fontSize: SIZES.xxl,
-    color: COLOURS.cream,
-    letterSpacing: 3,
-    marginBottom: SPACE.sm,
-    textAlign: 'center',
+    fontFamily:        FONTS.display,
+    fontSize:          SIZES.xxl,
+    color:             COLOURS.cream,
+    letterSpacing:     3,
+    textAlign:         'center',
+    paddingHorizontal: SPACE.lg,
+    marginBottom:      SPACE.sm,
   },
   detail: {
-    fontFamily: FONTS.mono,
-    fontSize: SIZES.sm,
-    color: COLOURS.dot,
-    textAlign: 'center',
-    lineHeight: 20,
-    marginBottom: SPACE.lg,
+    fontFamily:        FONTS.mono,
+    fontSize:          SIZES.sm,
+    color:             COLOURS.dot,
+    textAlign:         'center',
+    lineHeight:        20,
+    paddingHorizontal: SPACE.xl,
+    marginBottom:      SPACE.md,
   },
+
+  // DRS
   drsBadge: {
-    backgroundColor: 'rgba(212,160,23,0.15)',
-    borderWidth: 1,
-    borderColor: COLOURS.gold,
-    paddingVertical: SPACE.xs,
+    backgroundColor:   'rgba(212,160,23,0.1)',
+    borderWidth:       1,
+    borderColor:       COLOURS.gold,
+    marginHorizontal:  SPACE.lg,
+    marginBottom:      SPACE.md,
+    paddingVertical:   SPACE.sm,
     paddingHorizontal: SPACE.md,
-    marginBottom: SPACE.lg,
+    borderRadius:      3,
+    alignItems:        'center',
+  },
+  drsBadgeUsed: {
+    backgroundColor: 'rgba(127,140,141,0.1)',
+    borderColor:     COLOURS.dot,
   },
   drsText: {
-    fontFamily: FONTS.display,
-    fontSize: SIZES.sm,
-    color: COLOURS.gold,
+    fontFamily:    FONTS.display,
+    fontSize:      SIZES.sm,
+    color:         COLOURS.gold,
+    letterSpacing: 2,
+  },
+
+  drsReviewing: {
+    alignItems:    'center',
+    paddingVertical: SPACE.lg,
+    marginBottom:  SPACE.md,
+  },
+  drsReviewingText: {
+    fontFamily:    FONTS.display,
+    fontSize:      SIZES.lg,
+    color:         COLOURS.gold,
     letterSpacing: 3,
   },
-  btn: {
-    backgroundColor: COLOURS.wicket,
-    borderRadius: 3,
-    paddingVertical: SPACE.md,
-    paddingHorizontal: SPACE.xxl,
+
+  drsResult: {
+    marginHorizontal: SPACE.lg,
+    marginBottom:     SPACE.md,
+    padding:          SPACE.lg,
+    borderWidth:      2,
+    borderRadius:     4,
+    alignItems:       'center',
+    backgroundColor:  COLOURS.slate,
   },
-  btnText: {
+  drsIcon: {
+    fontSize:     28,
+    marginBottom: SPACE.xs,
+  },
+  drsLabel: {
+    fontFamily:    FONTS.display,
+    fontSize:      SIZES.xxl,
+    letterSpacing: 3,
+    marginBottom:  SPACE.xs,
+    textAlign:     'center',
+  },
+  drsDetail: {
+    fontFamily:   FONTS.mono,
+    fontSize:     SIZES.xs,
+    color:        COLOURS.dot,
+    textAlign:    'center',
+    lineHeight:   16,
+    marginBottom: SPACE.sm,
+  },
+  drsDie: {
+    alignItems:      'center',
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius:    6,
+    paddingVertical: SPACE.xs,
+    paddingHorizontal: SPACE.md,
+    marginBottom:    SPACE.xs,
+  },
+  drsDieVal: {
     fontFamily: FONTS.display,
-    fontSize: SIZES.lg,
+    fontSize:   SIZES.xxl,
+    color:      COLOURS.cream,
+  },
+  drsDieLabel: {
+    fontFamily:    FONTS.mono,
+    fontSize:      SIZES.xs,
+    color:         COLOURS.dot,
+    letterSpacing: 2,
+  },
+  drsReviewSaved: {
+    fontFamily:    FONTS.mono,
+    fontSize:      SIZES.xs,
+    color:         COLOURS.runs1,
+    letterSpacing: 1,
+  },
+
+  // Buttons
+  btnRow: {
+    padding: SPACE.lg,
+    gap:     SPACE.sm,
+  },
+  drsBtn: {
+    backgroundColor: COLOURS.gold,
+    borderRadius:    3,
+    paddingVertical: SPACE.md,
+    alignItems:      'center',
+  },
+  drsBtnText: {
+    fontFamily:    FONTS.display,
+    fontSize:      SIZES.lg,
     letterSpacing: 4,
-    color: COLOURS.white,
+    color:         COLOURS.ink,
+  },
+  continueBtn: {
+    backgroundColor: COLOURS.wicket,
+    borderRadius:    3,
+    paddingVertical: SPACE.md,
+    alignItems:      'center',
+  },
+  continueBtnText: {
+    fontFamily:    FONTS.display,
+    fontSize:      SIZES.md,
+    letterSpacing: 3,
+    color:         COLOURS.white,
   },
 });

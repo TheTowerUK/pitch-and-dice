@@ -101,15 +101,14 @@ export const getAIBattingDecision = (state) => {
   const totalOvers   = { T20: 20, ODI: 50, Test: 90 }[format] || 20;
   const isDeathOvers = over >= totalOvers - 4;
   const isPowerPlay  = over < 6;
+  const isMidInnings = over >= 6 && over < totalOvers - 4;
   const isChasing    = !!target && innings === 2;
   const runsNeeded   = target ? target - runs : null;
   const ballsLeft    = (totalOvers * 6) - balls;
   const rrr          = runsNeeded && ballsLeft > 0
     ? (runsNeeded / ballsLeft) * 6 : 0;
 
-  // ── Situation-based decisions ──────────
-
-  // Crumbling — survive first
+  // ── Crumbling — survive first ──────────
   if (momentum <= -6 || wickets >= 7) {
     return {
       shot:       'defend',
@@ -118,7 +117,7 @@ export const getAIBattingDecision = (state) => {
     };
   }
 
-  // Under pressure — play carefully
+  // ── Under pressure — play carefully ───
   if (momentum <= -3 || wickets >= 5) {
     return {
       shot:       'work',
@@ -127,7 +126,7 @@ export const getAIBattingDecision = (state) => {
     };
   }
 
-  // Chase is desperate — must go big
+  // ── Chase is desperate — must go big ──
   if (isChasing && rrr >= 13) {
     return {
       shot:       'slog',
@@ -136,7 +135,7 @@ export const getAIBattingDecision = (state) => {
     };
   }
 
-  // Chase requires acceleration
+  // ── Chase requires acceleration ────────
   if (isChasing && rrr >= 10) {
     return {
       shot:       'power',
@@ -145,24 +144,45 @@ export const getAIBattingDecision = (state) => {
     };
   }
 
-  // Death overs — go hard
+  // ── Death overs — measured aggression ──
   if (isDeathOvers) {
-    if (momentum >= 4) {
+    if (wickets >= 6) {
       return {
-        shot:       'slog',
+        shot:       'work',
+        aggression: 'balanced',
+        reasoning:  'Death overs but tail exposed — protecting wickets.',
+      };
+    }
+    if (wickets >= 4) {
+      return {
+        shot:       'drive',
+        aggression: 'balanced',
+        reasoning:  'Death overs — finding gaps rather than slogging.',
+      };
+    }
+    if (momentum >= 5 && wickets <= 3) {
+      return {
+        shot:       'power',
         aggression: 'aggressive',
-        reasoning:  'Death overs, in form — going for it.',
+        reasoning:  'Death overs, set batsmen in form — pushing hard.',
       };
     }
     return {
-      shot:       'power',
-      aggression: 'aggressive',
-      reasoning:  'Death overs — must accelerate.',
+      shot:       'drive',
+      aggression: 'balanced',
+      reasoning:  'Death overs — looking for boundaries in the gaps.',
     };
   }
 
-  // Power play — take advantage of fielding restrictions
+  // ── Power play — use restrictions ──────
   if (isPowerPlay) {
+    if (wickets >= 2) {
+      return {
+        shot:       'work',
+        aggression: 'balanced',
+        reasoning:  'Wickets down in power play — consolidating.',
+      };
+    }
     return {
       shot:       'drive',
       aggression: 'balanced',
@@ -170,34 +190,56 @@ export const getAIBattingDecision = (state) => {
     };
   }
 
-  // In the zone — press the advantage
-  if (momentum >= 6) {
+  // ── Mid innings ────────────────────────
+  if (isMidInnings) {
+    if (momentum >= 6 && wickets <= 1) {
+      return {
+        shot:       'drive',
+        aggression: 'balanced',
+        reasoning:  'Playing well — keeping the scoreboard moving sensibly.',
+      };
+    }
+    if (momentum >= 3 && wickets <= 3) {
+      // Split work/drive so neutral "good" mid-overs are not almost always zero-wicket work.
+      const shot = Math.random() < 0.45 ? 'drive' : 'work';
+      return {
+        shot,
+        aggression: 'balanced',
+        reasoning:
+          shot === 'drive'
+            ? 'Settled — pushing into gaps when it\'s there.'
+            : 'Settled — rotating strike and looking for gaps.',
+      };
+    }
+    if (momentum >= 3 && wickets >= 4) {
+      return {
+        shot:       'work',
+        aggression: 'conservative',
+        reasoning:  'Wickets down — consolidating rather than attacking.',
+      };
+    }
+    if (isChasing && rrr < 7) {
+      const shot = Math.random() < 0.4 ? 'drive' : 'work';
+      return {
+        shot,
+        aggression: 'balanced',
+        reasoning:
+          shot === 'drive'
+            ? 'Chase is on track — still picking off boundaries when offered.'
+            : 'Chase is on track — rotating strike.',
+      };
+    }
+    // Was 60% work / 20% drive / 20% defend — work has no table wickets; bias slightly toward drive.
+    const midOptions = ['work', 'drive', 'drive', 'defend', 'drive'];
+    const pick = midOptions[Math.floor(Math.random() * midOptions.length)];
     return {
-      shot:       'power',
-      aggression: 'aggressive',
-      reasoning:  'Feeling good — pressing the advantage.',
-    };
-  }
-
-  // Confident — keep scoring
-  if (momentum >= 3) {
-    return {
-      shot:       'drive',
+      shot:       pick,
       aggression: 'balanced',
-      reasoning:  'Playing well — keeping the scoreboard moving.',
+      reasoning:  'Building the innings — playing sensibly.',
     };
   }
 
-  // Chase comfortable — rotate strike
-  if (isChasing && rrr < 7) {
-    return {
-      shot:       'work',
-      aggression: 'balanced',
-      reasoning:  'Chase is on track — rotating strike.',
-    };
-  }
-
-  // Default neutral mid-innings
+  // ── Default neutral ────────────────────
   return {
     shot:       'work',
     aggression: 'balanced',

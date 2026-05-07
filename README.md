@@ -1,65 +1,93 @@
-# Pitch & Dice 🎲🏏
-### React Native + Expo — Phase 1 MVP
+![Expo](https://img.shields.io/badge/Expo-SDK%2054-blue)
+![Platform](https://img.shields.io/badge/iOS-Android-green)
+![Status](https://img.shields.io/badge/Status-In%20Development-orange)
+
+# 🏏 Pitch & Dice
+
+Strategic cricket dice game for iOS & Android
+Built with React Native + Expo
+
+Every ball is a decision. Every dice roll is fate.
 
 ---
 
-## Quick Start in Cursor
+## 🎮 What is Pitch & Dice?
 
-### 1. Open the project folder in Cursor
-```
-File → Open Folder → select pitch-and-dice/
-```
+Pitch & Dice is a strategy-first cricket simulation where:
 
-### 2. Install dependencies
-Open the Cursor terminal (Ctrl+` or Cmd+`) and run:
+- You choose shot type, aggression, bowling variation, and field
+- Dice determine outcomes — but your decisions shape the probabilities
+- Momentum, pressure, and match context evolve every ball
+
+This is not random dice cricket — it's a tactical engine disguised as a game
+
+---
+
+## ⚡ Key Features
+
+- 🎲 Multi-dice system (D4–D12) tied to player decisions
+- 🧠 Momentum engine (-10 → +10) affecting outcomes
+- 🏏 Multiple formats: T20 / ODI / Test
+- 🤖 AI opponent (batting, bowling, field logic)
+- 📊 Match persistence + history (AsyncStorage)
+- 🎯 Field placement system (zone-based)
+- 🎧 Audio engine (crowd, commentary, SFX)
+- 🎭 Special events system (D20 triggers)
+
+---
+
+## 🧠 Core Idea
+
+**Decision → Dice Pool → Roll → Modify → Resolve → Momentum Update**
+
+Strategy shapes probability — not the other way around
+
+---
+
+## 🚀 Getting Started
+
 ```bash
 npm install
-```
-
-### 3. Start Expo
-```bash
 npx expo start
 ```
 
-### 4. Open on your phone
-- Install **Expo Go** from the App Store or Google Play
-- Scan the QR code shown in the terminal
-- The app loads instantly on your device
+---
+
+## 📚 Documentation (Read in Order)
+
+| # | File | Purpose |
+|---|------|---------|
+| 1 | `Cricket_Dice_Game_RPD.md` | Design intent (vision, feel, philosophy) |
+| 2 | `CONTEXT_BRIEF.md` | What's built (systems, phases, architecture) |
+| 3 | `PitchandDice.md` | Engineering guide (code map, rules, pitfalls) |
+| 4 | `README.md` | You are here |
+
+If RPD conflicts with implementation, **code + CONTEXT_BRIEF win**
+
+**ODI format scope:** see [`ODI_SCOPE.md`](./ODI_SCOPE.md) for product intent (match length and atmosphere vs full real-world ODI rules, and post-release tuning).
 
 ---
 
-## Project Structure
+## 🏗️ Architecture
 
-```
-App.js                  ← Entry point
-src/
-  constants/theme.js    ← Design system (colours, fonts, spacing)
-  engine/
-    diceEngine.js       ← Core dice logic (framework-free)
-    useGameState.js     ← Game state management hook
-  components/           ← UI components (display only, no game logic)
-  screens/
-    GameScreen.js       ← Main screen
-```
+| Layer | Location |
+|-------|----------|
+| Game logic | `src/engine/` |
+| State | `useGameState.js` |
+| UI | `src/components/` + `src/screens/` |
+| Persistence | AsyncStorage via `storageEngine` |
 
-## Key Principle
-**All game logic lives in `/engine` only.**
-Components receive data and call actions — they never compute outcomes directly.
-This keeps the game logic portable and testable.
+No business logic in UI components.
 
 ---
 
-## Phase 1 Features
-- D4 / D6 / D8 / D10 / D12 dice per shot type
-- 5 shot types: Defend, Work, Drive, Power, Slog
-- 3 aggression levels with ±1 modifier
-- Wicket sub-roll (D6 → dismissal type)
-- Full innings lifecycle: batting → wicket → innings end → target chase
-- T20 / ODI / Test format switching
-- Ball-by-ball commentary feed
+## 🧪 Status
 
-## Phase 2 (next)
-- Momentum engine
-- Player skill ratings
-- Pitch conditions
-- Bowling decisions + field placement
+- ✅ Phases 1–4 complete (core gameplay + AI + teams)
+- 🚧 Phase 5 in progress (polish, audio, store readiness)
+
+---
+
+## 📄 Licence
+
+[MIT](LICENSE) — Copyright (c) 2026 TheTowerUK

@@ -64,3 +64,30 @@ export const FORMATS = {
 };
 
 export const FORMAT_ORDER = ['T20', 'ODI', 'Test'];
+
+/** User-facing lines for setup, scoreboard, and help — atmosphere-first, not rule-complete. */
+export const FORMAT_PRESENTATION = {
+  T20: {
+    headline:    'T20 — Quick match',
+    scoreboard:  'T20 · Quick match',
+    setupSummary: '20 overs — fast swings in momentum.',
+    help:        'Twenty overs per innings. Quick decisions and rapid context shifts — good for learning the engine.',
+  },
+  ODI: {
+    headline:    'ODI — 50 overs',
+    scoreboard:  'ODI · 50 overs',
+    setupSummary: '50 overs per innings — a longer stretch and richer match arc.',
+    help:        'Fifty overs per innings for extended play. Uses the same core rules as shorter formats — not a full real-world ODI simulation.',
+  },
+  Test: {
+    headline:    'Test — 90 overs',
+    scoreboard:  'Test · 90 overs',
+    setupSummary: '90 overs per innings — the longest session.',
+    help:        'Ninety overs per innings. Paced for a marathon feel; mechanics match other formats.',
+  },
+};
+
+export const getFormatScoreboardLabel = (formatKey) =>
+  FORMAT_PRESENTATION[formatKey]?.scoreboard
+  || FORMATS[formatKey]?.label
+  || String(formatKey || '');

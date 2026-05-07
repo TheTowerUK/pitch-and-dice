@@ -7,22 +7,37 @@
 import React, { useState } from 'react';
 import {
   View, Text, TouchableOpacity,
-  StyleSheet, StatusBar,
+  StyleSheet, SafeAreaView, StatusBar,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLOURS, FONTS, SIZES, SPACE } from '../constants/theme';
 
 const ModeCard = ({ title, subtitle, description, selected, onPress, accent }) => (
   <TouchableOpacity
-    style={[styles.card, selected && { borderColor: accent, backgroundColor: accent + '15' }]}
+    style={[
+      styles.card,
+      selected && [
+        styles.cardSelected,
+        {
+          borderColor: accent,
+          shadowColor: accent,
+        },
+      ],
+    ]}
     onPress={onPress}
     activeOpacity={0.8}
   >
     <View style={[styles.cardAccent, { backgroundColor: accent }]} />
     <View style={styles.cardContent}>
-      <Text style={[styles.cardTitle, selected && { color: accent }]}>{title}</Text>
+      <View style={styles.cardTitleRow}>
+        <Text style={styles.cardTitle}>{title}</Text>
+        {selected && (
+          <View style={[styles.selectedPill, { borderColor: accent }]}>
+            <Text style={styles.selectedPillText}>SELECTED</Text>
+          </View>
+        )}
+      </View>
       {subtitle && (
-        <Text style={[styles.cardSubtitle, selected && { color: accent, opacity: 0.8 }]}>
+        <Text style={styles.cardSubtitle}>
           {subtitle}
         </Text>
       )}
@@ -36,7 +51,7 @@ const ModeCard = ({ title, subtitle, description, selected, onPress, accent }) =
   </TouchableOpacity>
 );
 
-export const ModeSelector = ({ onConfirm, format }) => {
+export const ModeSelector = ({ onConfirm, onBack, format }) => {
   const [mode, setMode] = useState(null);
 
   const canConfirm = mode !== null;
@@ -47,8 +62,13 @@ export const ModeSelector = ({ onConfirm, format }) => {
 
       <View style={styles.header}>
         <Text style={styles.logo}>PITCH & DICE</Text>
-        <Text style={styles.formatBadge}>{format}</Text>
+        <Text style={styles.subtitle}>{format} · SELECT MODE</Text>
       </View>
+
+      {/* Back button sits below header, clear of the logo */}
+      <TouchableOpacity onPress={onBack} style={styles.backBtn} activeOpacity={0.7}>
+        <Text style={styles.backText}>← BACK TO HOME</Text>
+      </TouchableOpacity>
 
       <View style={styles.body}>
         <Text style={styles.sectionTitle}>SELECT GAME MODE</Text>
@@ -93,7 +113,7 @@ export const ModeSelector = ({ onConfirm, format }) => {
           disabled={!canConfirm}
           activeOpacity={0.85}
         >
-          <Text style={[styles.confirmText, !canConfirm && { color: COLOURS.dot }]}>
+          <Text style={[styles.confirmText, !canConfirm && { color: COLOURS.gold }]}>
             {mode === null ? 'SELECT A MODE' : 'CONTINUE →'}
           </Text>
         </TouchableOpacity>
@@ -104,6 +124,17 @@ export const ModeSelector = ({ onConfirm, format }) => {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLOURS.slate },
+  backBtn: {
+    paddingHorizontal: SPACE.lg,
+    paddingVertical:   SPACE.md,
+    alignSelf:         'flex-start',
+  },
+  backText: {
+    fontFamily:    FONTS.display,
+    fontSize:      SIZES.md,
+    letterSpacing: 2,
+    color:         COLOURS.dot,
+  },
 
   header: {
     backgroundColor:   COLOURS.ink,
@@ -111,25 +142,20 @@ const styles = StyleSheet.create({
     paddingVertical:   SPACE.lg,
     borderBottomWidth: 3,
     borderBottomColor: COLOURS.gold,
-    flexDirection:     'row',
     alignItems:        'center',
-    justifyContent:    'space-between',
   },
   logo: {
-    fontFamily:   FONTS.display,
-    fontSize:     28,
+    fontFamily:    FONTS.display,
+    fontSize:      28,
     letterSpacing: 5,
-    color:        COLOURS.gold,
+    color:         COLOURS.gold,
   },
-  formatBadge: {
-    fontFamily:   FONTS.display,
-    fontSize:     SIZES.md,
-    letterSpacing: 3,
-    color:        COLOURS.gold,
-    borderWidth:  1,
-    borderColor:  COLOURS.gold,
-    paddingVertical:   SPACE.xs,
-    paddingHorizontal: SPACE.md,
+  subtitle: {
+    fontFamily:    FONTS.mono,
+    fontSize:      SIZES.xs,
+    color:         COLOURS.dot,
+    letterSpacing: 2,
+    marginTop:     SPACE.xs,
   },
 
   body: {
@@ -155,6 +181,14 @@ const styles = StyleSheet.create({
     overflow:        'hidden',
     minHeight:       80,
   },
+  cardSelected: {
+    borderWidth: 3,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
+    elevation: 6,
+    transform: [{ scale: 1.03 }],
+  },
   cardAccent: {
     width: 4,
   },
@@ -162,25 +196,46 @@ const styles = StyleSheet.create({
     flex:    1,
     padding: SPACE.md,
   },
+  cardTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: SPACE.sm,
+  },
   cardTitle: {
     fontFamily:   FONTS.display,
     fontSize:     SIZES.lg,
-    color:        COLOURS.cream,
+    color:        COLOURS.white,
     letterSpacing: 3,
     marginBottom: 2,
+    flex: 1,
   },
   cardSubtitle: {
     fontFamily:   FONTS.display,
     fontSize:     SIZES.sm,
-    color:        COLOURS.dot,
+    color:        COLOURS.white,
     letterSpacing: 2,
     marginBottom: SPACE.xs,
+    opacity: 0.95,
   },
   cardDesc: {
     fontFamily: FONTS.mono,
     fontSize:   SIZES.xs,
     color:      COLOURS.dot,
     lineHeight: 16,
+  },
+  selectedPill: {
+    borderWidth: 1,
+    borderRadius: 999,
+    paddingHorizontal: SPACE.sm,
+    paddingVertical: 2,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+  },
+  selectedPillText: {
+    fontFamily: FONTS.mono,
+    fontSize: 9,
+    letterSpacing: 1.2,
+    color: COLOURS.white,
   },
   selectedBadge: {
     width:          32,
@@ -202,20 +257,25 @@ const styles = StyleSheet.create({
     marginVertical: SPACE.sm,
   },
 
-  footer: {
-    padding:          SPACE.lg,
-    backgroundColor:  COLOURS.ink,
-    borderTopWidth:   1,
-    borderTopColor:   'rgba(255,255,255,0.07)',
-  },
+  footer: {},
   confirmBtn: {
     backgroundColor: COLOURS.gold,
     borderRadius:    4,
     paddingVertical: SPACE.lg,
     alignItems:      'center',
+    width:           '100%',
+    shadowColor:     COLOURS.gold,
+    shadowOffset:    { width: 0, height: 4 },
+    shadowOpacity:   0.35,
+    shadowRadius:    8,
+    elevation:       6,
   },
   confirmBtnDisabled: {
-    backgroundColor: COLOURS.slateMid,
+    backgroundColor: 'transparent',
+    borderWidth:     1,
+    borderColor:     COLOURS.gold,
+    shadowOpacity:   0,
+    elevation:       0,
   },
   confirmText: {
     fontFamily:   FONTS.display,

@@ -13,16 +13,28 @@ export const PressureIndicator = ({ rrr, pressureTier, target, runs, ballsRemain
 
   const runsNeeded   = Math.max(0, target - runs);
   const oversLeft    = (ballsRemaining / 6).toFixed(1);
-  const isComfort    = pressureTier.key === 'comfortable';
+  const isDeathOvers = ballsRemaining > 0 && ballsRemaining <= 6;
 
   return (
     <View style={[styles.container, { borderLeftColor: pressureTier.colour }]}>
       <View style={styles.left}>
-        <Text style={styles.label}>REQUIRED</Text>
-        <Text style={[styles.rrr, { color: pressureTier.colour }]}>
-          {rrr > 0 ? rrr.toFixed(1) : '—'}
-        </Text>
-        <Text style={styles.unit}>per over</Text>
+        {isDeathOvers ? (
+          <>
+            <Text style={styles.label}>OFF</Text>
+            <Text style={[styles.rrr, { color: pressureTier.colour }]}>
+              {ballsRemaining}
+            </Text>
+            <Text style={styles.unit}>{ballsRemaining === 1 ? 'ball' : 'balls'}</Text>
+          </>
+        ) : (
+          <>
+            <Text style={styles.label}>REQUIRED</Text>
+            <Text style={[styles.rrr, { color: pressureTier.colour }]}>
+              {rrr > 0 ? rrr.toFixed(1) : '—'}
+            </Text>
+            <Text style={styles.unit}>per over</Text>
+          </>
+        )}
       </View>
 
       <View style={styles.centre}>
@@ -37,7 +49,9 @@ export const PressureIndicator = ({ rrr, pressureTier, target, runs, ballsRemain
         <Text style={[styles.runsNeeded, { color: pressureTier.colour }]}>
           {runsNeeded}
         </Text>
-        <Text style={styles.unit}>{oversLeft} ov left</Text>
+        <Text style={styles.unit}>
+          {isDeathOvers ? 'runs' : `${oversLeft} ov left`}
+        </Text>
       </View>
     </View>
   );

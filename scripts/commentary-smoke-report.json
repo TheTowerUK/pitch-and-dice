@@ -1,0 +1,602 @@
+{
+  "generatedAt": "2026-04-24T05:40:50.455Z",
+  "warnings": [
+    "legacy refs in code: commentary.analyst., losses, first_innings_end_par, chase_start_balanced, pressure_1"
+  ],
+  "logs": [
+    {
+      "flow": "startup_validation",
+      "pools": [
+        {
+          "role": "lead",
+          "pool": "general",
+          "expected": 15,
+          "loaded": 15
+        },
+        {
+          "role": "lead",
+          "pool": "pressure_calm",
+          "expected": 8,
+          "loaded": 8
+        },
+        {
+          "role": "lead",
+          "pool": "pressure_watchful",
+          "expected": 8,
+          "loaded": 8
+        },
+        {
+          "role": "lead",
+          "pool": "pressure_building",
+          "expected": 8,
+          "loaded": 8
+        },
+        {
+          "role": "lead",
+          "pool": "pressure_high",
+          "expected": 8,
+          "loaded": 8
+        },
+        {
+          "role": "lead",
+          "pool": "pressure_extreme",
+          "expected": 8,
+          "loaded": 8
+        },
+        {
+          "role": "lead",
+          "pool": "dot_calm",
+          "expected": 6,
+          "loaded": 6
+        },
+        {
+          "role": "lead",
+          "pool": "dot_watchful",
+          "expected": 6,
+          "loaded": 6
+        },
+        {
+          "role": "lead",
+          "pool": "dot_building",
+          "expected": 6,
+          "loaded": 6
+        },
+        {
+          "role": "lead",
+          "pool": "dot_high",
+          "expected": 6,
+          "loaded": 6
+        },
+        {
+          "role": "lead",
+          "pool": "dot_extreme",
+          "expected": 6,
+          "loaded": 6
+        },
+        {
+          "role": "lead",
+          "pool": "singles_neutral",
+          "expected": 10,
+          "loaded": 10
+        },
+        {
+          "role": "lead",
+          "pool": "singles_pressure",
+          "expected": 8,
+          "loaded": 8
+        },
+        {
+          "role": "lead",
+          "pool": "singles_chase",
+          "expected": 7,
+          "loaded": 7
+        },
+        {
+          "role": "lead",
+          "pool": "two_neutral",
+          "expected": 10,
+          "loaded": 10
+        },
+        {
+          "role": "lead",
+          "pool": "two_pressure",
+          "expected": 5,
+          "loaded": 5
+        },
+        {
+          "role": "lead",
+          "pool": "two_chase",
+          "expected": 5,
+          "loaded": 5
+        },
+        {
+          "role": "lead",
+          "pool": "four",
+          "expected": 6,
+          "loaded": 6
+        },
+        {
+          "role": "lead",
+          "pool": "six",
+          "expected": 6,
+          "loaded": 6
+        },
+        {
+          "role": "lead",
+          "pool": "bowled",
+          "expected": 5,
+          "loaded": 5
+        },
+        {
+          "role": "lead",
+          "pool": "caught",
+          "expected": 5,
+          "loaded": 5
+        },
+        {
+          "role": "lead",
+          "pool": "lbw",
+          "expected": 2,
+          "loaded": 2
+        },
+        {
+          "role": "lead",
+          "pool": "stumped",
+          "expected": 2,
+          "loaded": 2
+        },
+        {
+          "role": "lead",
+          "pool": "run_out",
+          "expected": 2,
+          "loaded": 2
+        },
+        {
+          "role": "lead",
+          "pool": "fifty",
+          "expected": 3,
+          "loaded": 3
+        },
+        {
+          "role": "lead",
+          "pool": "century",
+          "expected": 3,
+          "loaded": 3
+        },
+        {
+          "role": "lead",
+          "pool": "special",
+          "expected": 9,
+          "loaded": 9
+        },
+        {
+          "role": "lead",
+          "pool": "wins",
+          "expected": 3,
+          "loaded": 3
+        },
+        {
+          "role": "lead",
+          "pool": "loss",
+          "expected": 3,
+          "loaded": 3
+        },
+        {
+          "role": "lead",
+          "pool": "close",
+          "expected": 10,
+          "loaded": 10
+        },
+        {
+          "role": "lead",
+          "pool": "impossible",
+          "expected": 10,
+          "loaded": 10
+        },
+        {
+          "role": "lead",
+          "pool": "first_innings_end",
+          "expected": 6,
+          "loaded": 6
+        },
+        {
+          "role": "lead",
+          "pool": "easy_chase",
+          "expected": 2,
+          "loaded": 2
+        },
+        {
+          "role": "lead",
+          "pool": "balanced_chase",
+          "expected": 2,
+          "loaded": 2
+        },
+        {
+          "role": "lead",
+          "pool": "tough_chase",
+          "expected": 2,
+          "loaded": 2
+        },
+        {
+          "role": "lead",
+          "pool": "very_tough_chase",
+          "expected": 2,
+          "loaded": 2
+        },
+        {
+          "role": "analyst",
+          "pool": "strike_rotate",
+          "expected": 6,
+          "loaded": 6
+        },
+        {
+          "role": "analyst",
+          "pool": "strike_hold",
+          "expected": 6,
+          "loaded": 6
+        },
+        {
+          "role": "analyst",
+          "pool": "boundary_hold",
+          "expected": 6,
+          "loaded": 6
+        },
+        {
+          "role": "analyst",
+          "pool": "over_end_rotate",
+          "expected": 6,
+          "loaded": 6
+        },
+        {
+          "role": "analyst",
+          "pool": "new_batter",
+          "expected": 6,
+          "loaded": 6
+        },
+        {
+          "role": "analyst",
+          "pool": "partnership_building",
+          "expected": 6,
+          "loaded": 6
+        },
+        {
+          "role": "analyst",
+          "pool": "partnership_pressure",
+          "expected": 6,
+          "loaded": 6
+        },
+        {
+          "role": "analyst",
+          "pool": "partnership_release",
+          "expected": 6,
+          "loaded": 6
+        }
+      ],
+      "legacyWarnings": [
+        "commentary.analyst.",
+        "losses",
+        "first_innings_end_par",
+        "chase_start_balanced",
+        "pressure_1"
+      ],
+      "warnings": [
+        "legacy refs in code: commentary.analyst., losses, first_innings_end_par, chase_start_balanced, pressure_1"
+      ]
+    },
+    {
+      "flow": "boundary",
+      "outcome": 4,
+      "leadPool": "four",
+      "leadClip": "cmt.lead.four_1",
+      "leadReserved": true
+    },
+    {
+      "flow": "boundary",
+      "outcome": 4,
+      "analystPool": "boundary_hold",
+      "analystDecision": "skipped_lane_busy",
+      "reason": "lead active"
+    },
+    {
+      "flow": "boundary",
+      "outcome": 4,
+      "analystPool": "boundary_hold",
+      "probability": 0.7,
+      "sampled": 0.4,
+      "analystAllowed": true,
+      "analystClip": "cmt.analyst.boundary_hold_1",
+      "analystDelayMs": 520,
+      "overlap": false
+    },
+    {
+      "flow": "boundary",
+      "outcome": 6,
+      "leadPool": "six",
+      "leadClip": "cmt.lead.six_1",
+      "leadReserved": true
+    },
+    {
+      "flow": "boundary",
+      "outcome": 6,
+      "analystPool": "boundary_hold",
+      "analystDecision": "skipped_lane_busy",
+      "reason": "lead active"
+    },
+    {
+      "flow": "boundary",
+      "outcome": 6,
+      "analystPool": "boundary_hold",
+      "probability": 0.7,
+      "sampled": 0.95,
+      "analystAllowed": false,
+      "analystClip": null,
+      "analystDelayMs": 520,
+      "overlap": false
+    },
+    {
+      "flow": "wicket",
+      "wicketType": "BOWLED",
+      "leadPool": "bowled",
+      "leadClip": "cmt.lead.bowled_1"
+    },
+    {
+      "flow": "wicket",
+      "wicketType": "BOWLED",
+      "analystPool": "new_batter",
+      "analystAllowed": true,
+      "analystDelayMs": 920,
+      "overlap": false,
+      "analystClip": "cmt.analyst.new_batter_1"
+    },
+    {
+      "flow": "wicket",
+      "wicketType": "CAUGHT",
+      "leadPool": "caught",
+      "leadClip": "cmt.lead.caught_1"
+    },
+    {
+      "flow": "wicket",
+      "wicketType": "CAUGHT",
+      "analystPool": "new_batter",
+      "analystAllowed": true,
+      "analystDelayMs": 920,
+      "overlap": false,
+      "analystClip": "cmt.analyst.new_batter_2"
+    },
+    {
+      "flow": "wicket",
+      "wicketType": "LBW",
+      "leadPool": "lbw",
+      "leadClip": "cmt.lead.lbw_1"
+    },
+    {
+      "flow": "wicket",
+      "wicketType": "LBW",
+      "analystPool": "new_batter",
+      "analystAllowed": true,
+      "analystDelayMs": 920,
+      "overlap": false,
+      "analystClip": "cmt.analyst.new_batter_3"
+    },
+    {
+      "flow": "wicket",
+      "wicketType": "STUMPED",
+      "leadPool": "stumped",
+      "leadClip": "cmt.lead.stumped_1"
+    },
+    {
+      "flow": "wicket",
+      "wicketType": "STUMPED",
+      "analystPool": "new_batter",
+      "analystAllowed": true,
+      "analystDelayMs": 920,
+      "overlap": false,
+      "analystClip": "cmt.analyst.new_batter_4"
+    },
+    {
+      "flow": "wicket",
+      "wicketType": "RUN OUT",
+      "leadPool": "run_out",
+      "leadClip": "cmt.lead.run_out_1"
+    },
+    {
+      "flow": "wicket",
+      "wicketType": "RUN OUT",
+      "analystPool": "new_batter",
+      "analystAllowed": true,
+      "analystDelayMs": 920,
+      "overlap": false,
+      "analystClip": "cmt.analyst.new_batter_5"
+    },
+    {
+      "flow": "dot_pressure",
+      "pressureState": "comfortable",
+      "selectedPool": "dot_calm",
+      "clip": "cmt.lead.dot_calm_1"
+    },
+    {
+      "flow": "dot_pressure",
+      "pressureState": "watchful",
+      "selectedPool": "dot_watchful",
+      "clip": "cmt.lead.dot_watchful_1"
+    },
+    {
+      "flow": "dot_pressure",
+      "pressureState": "tense",
+      "selectedPool": "dot_building",
+      "clip": "cmt.lead.dot_building_1"
+    },
+    {
+      "flow": "dot_pressure",
+      "pressureState": "desperate",
+      "selectedPool": "dot_high",
+      "clip": "cmt.lead.dot_high_1"
+    },
+    {
+      "flow": "dot_pressure",
+      "pressureState": "impossible",
+      "selectedPool": "dot_extreme",
+      "clip": "cmt.lead.dot_extreme_1"
+    },
+    {
+      "flow": "singles_twos",
+      "runs": 1,
+      "innings": 1,
+      "pressure": "watchful",
+      "pool": "singles_neutral",
+      "clip": "cmt.lead.singles_neutral_1"
+    },
+    {
+      "flow": "singles_twos",
+      "runs": 1,
+      "innings": 1,
+      "pressure": "tense",
+      "pool": "singles_pressure",
+      "clip": "cmt.lead.singles_pressure_1"
+    },
+    {
+      "flow": "singles_twos",
+      "runs": 1,
+      "innings": 2,
+      "pressure": "desperate",
+      "pool": "singles_chase",
+      "clip": "cmt.lead.singles_chase_1"
+    },
+    {
+      "flow": "singles_twos",
+      "runs": 2,
+      "innings": 1,
+      "pressure": "watchful",
+      "pool": "two_neutral",
+      "clip": "cmt.lead.two_neutral_1"
+    },
+    {
+      "flow": "singles_twos",
+      "runs": 2,
+      "innings": 1,
+      "pressure": "tense",
+      "pool": "two_pressure",
+      "clip": "cmt.lead.two_pressure_1"
+    },
+    {
+      "flow": "singles_twos",
+      "runs": 2,
+      "innings": 2,
+      "pressure": "desperate",
+      "pool": "two_chase",
+      "clip": "cmt.lead.two_chase_1"
+    },
+    {
+      "flow": "chase_start",
+      "pressureState": "comfortable",
+      "pool": "easy_chase",
+      "clip": "cmt.lead.easy_chase_1"
+    },
+    {
+      "flow": "chase_start",
+      "pressureState": "watchful",
+      "pool": "balanced_chase",
+      "clip": "cmt.lead.balanced_chase_1"
+    },
+    {
+      "flow": "chase_start",
+      "pressureState": "tense",
+      "pool": "tough_chase",
+      "clip": "cmt.lead.tough_chase_1"
+    },
+    {
+      "flow": "chase_start",
+      "pressureState": "desperate",
+      "pool": "very_tough_chase",
+      "clip": "cmt.lead.very_tough_chase_1"
+    },
+    {
+      "flow": "innings_result",
+      "pool": "first_innings_end",
+      "clip": "cmt.lead.first_innings_end_1"
+    },
+    {
+      "flow": "innings_result",
+      "pool": "wins",
+      "clip": "cmt.lead.wins_1"
+    },
+    {
+      "flow": "innings_result",
+      "pool": "loss",
+      "clip": "cmt.lead.loss_1"
+    },
+    {
+      "flow": "special_events",
+      "eventIndex": 1,
+      "resolvedKey": "cmt.lead.no_ball_1",
+      "exists": true
+    },
+    {
+      "flow": "special_events",
+      "eventIndex": 2,
+      "resolvedKey": "cmt.lead.dropped_catch_1",
+      "exists": true
+    },
+    {
+      "flow": "special_events",
+      "eventIndex": 3,
+      "resolvedKey": "cmt.lead.drs_win_1",
+      "exists": true
+    },
+    {
+      "flow": "special_events",
+      "eventIndex": 4,
+      "resolvedKey": "cmt.lead.drs_lose_1",
+      "exists": true
+    },
+    {
+      "flow": "special_events",
+      "eventIndex": 5,
+      "resolvedKey": "cmt.lead.injury_1",
+      "exists": true
+    },
+    {
+      "flow": "special_events",
+      "eventIndex": 6,
+      "resolvedKey": "cmt.lead.weather_1",
+      "exists": true
+    },
+    {
+      "flow": "special_events",
+      "eventIndex": 7,
+      "resolvedKey": "cmt.lead.drinks_1",
+      "exists": true
+    },
+    {
+      "flow": "special_events",
+      "eventIndex": 8,
+      "resolvedKey": "cmt.lead.legendary_ball_1",
+      "exists": true
+    },
+    {
+      "flow": "special_events",
+      "eventIndex": 9,
+      "resolvedKey": "cmt.lead.new_ball_1",
+      "exists": true
+    },
+    {
+      "flow": "general_safety",
+      "duringActiveSpeech": true,
+      "generalAllowed": false,
+      "result": "skipped_lane_busy"
+    },
+    {
+      "flow": "general_safety",
+      "duringActiveSpeech": false,
+      "generalAllowed": true,
+      "clip": "cmt.lead.general_1"
+    },
+    {
+      "flow": "overlap_dedupe",
+      "overlapBlocked": true,
+      "clipA": "cmt.lead.four_2",
+      "dedupeFirstAllowed": true,
+      "dedupeImmediateRepeatBlocked": true
+    }
+  ]
+}

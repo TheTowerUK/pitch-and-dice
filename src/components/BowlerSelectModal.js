@@ -22,11 +22,13 @@ export const BowlerSelectModal = ({
 
   useEffect(() => {
     if (visible) {
-      setSelected(null);
+      // Defer state update to avoid concurrent rendering conflict
+      const id = setTimeout(() => setSelected(null), 0);
       scaleAnim.setValue(0.9);
       Animated.spring(scaleAnim, {
         toValue: 1, friction: 7, tension: 80, useNativeDriver: true,
       }).start();
+      return () => clearTimeout(id);
     }
   }, [visible]);
 

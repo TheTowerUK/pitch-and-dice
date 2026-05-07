@@ -101,9 +101,9 @@ export const resolveForcedCheck = (variationKey, rollDieFn, aggressionKey, netSk
 
   switch (variation.forcedCheck) {
     case 'edge':
-      // Swing edge — low roll = dot threat or edge, not instant wicket
-      // Edge wicket only if roll = 1 AND adjusted still = 1 (skill can save)
-      if (adjustedRoll <= 2) {
+      // Swing edge — only triggers on roll = 1 (skill-adjusted)
+      // ~16.7% chance, reduced from ≤2 to stop dot inflation
+      if (adjustedRoll === 1) {
         return {
           type:   'dot',
           runs:   0,
@@ -115,8 +115,8 @@ export const resolveForcedCheck = (variationKey, rollDieFn, aggressionKey, netSk
       return null;
 
     case 'misread':
-      // Spin misread — forced dot, not automatic wicket
-      if (adjustedRoll <= 2) {
+      // Spin misread — roll = 1 only
+      if (adjustedRoll === 1) {
         return {
           type:   'dot',
           runs:   0,
@@ -128,8 +128,8 @@ export const resolveForcedCheck = (variationKey, rollDieFn, aggressionKey, netSk
       return null;
 
     case 'timing':
-      // Slower ball — dot on low roll
-      if (adjustedRoll <= 2) {
+      // Slower ball — roll = 1 only
+      if (adjustedRoll === 1) {
         return {
           type:   'dot',
           runs:   0,

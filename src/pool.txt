@@ -1,0 +1,806 @@
+ Volume in drive D is Western Digital
+ Volume Serial Number is BA68-FEE7
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds
+
+22/04/2026  17:37    <DIR>          .
+08/04/2026  15:40    <DIR>          ..
+21/04/2026  11:52    <DIR>          commentary
+21/04/2026  11:53    <DIR>          crowd
+22/04/2026  17:37                 0 pool.txt
+21/04/2026  13:48    <DIR>          sfx
+21/04/2026  11:53    <DIR>          umpire
+               1 File(s)              0 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary
+
+21/04/2026  11:52    <DIR>          .
+22/04/2026  17:37    <DIR>          ..
+22/04/2026  17:23    <DIR>          analyst
+22/04/2026  17:30    <DIR>          lead
+               0 File(s)              0 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\analyst
+
+22/04/2026  17:23    <DIR>          .
+21/04/2026  11:52    <DIR>          ..
+22/04/2026  17:21    <DIR>          batter
+22/04/2026  17:21    <DIR>          over
+22/04/2026  17:22    <DIR>          partnership
+22/04/2026  17:20    <DIR>          strike
+               0 File(s)              0 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\analyst\batter
+
+22/04/2026  17:21    <DIR>          .
+22/04/2026  17:23    <DIR>          ..
+22/04/2026  17:23    <DIR>          new_batter
+               0 File(s)              0 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\analyst\batter\new_batter
+
+22/04/2026  17:23    <DIR>          .
+22/04/2026  17:21    <DIR>          ..
+21/04/2026  13:22            90,214 new_batter_1.mp3
+21/04/2026  13:22            76,839 new_batter_2.mp3
+21/04/2026  13:22            99,827 new_batter_3.mp3
+21/04/2026  13:22           102,335 new_batter_4.mp3
+21/04/2026  13:23            82,691 new_batter_5.mp3
+21/04/2026  13:23            89,378 new_batter_6.mp3
+               6 File(s)        541,284 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\analyst\over
+
+22/04/2026  17:21    <DIR>          .
+22/04/2026  17:23    <DIR>          ..
+22/04/2026  17:23    <DIR>          end_rotate
+               0 File(s)              0 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\analyst\over\end_rotate
+
+22/04/2026  17:23    <DIR>          .
+22/04/2026  17:21    <DIR>          ..
+21/04/2026  12:43            82,273 over_end_rotate_1.mp3
+21/04/2026  12:43            96,066 over_end_rotate_2.mp3
+21/04/2026  12:43            85,199 over_end_rotate_3.mp3
+21/04/2026  12:43           109,440 over_end_rotate_4.mp3
+21/04/2026  12:44            93,976 over_end_rotate_5.mp3
+21/04/2026  12:44           104,425 over_end_rotate_6.mp3
+               6 File(s)        571,379 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\analyst\partnership
+
+22/04/2026  17:22    <DIR>          .
+22/04/2026  17:23    <DIR>          ..
+22/04/2026  17:23    <DIR>          building
+22/04/2026  17:23    <DIR>          pressure
+22/04/2026  17:23    <DIR>          release
+               0 File(s)              0 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\analyst\partnership\building
+
+22/04/2026  17:23    <DIR>          .
+22/04/2026  17:22    <DIR>          ..
+21/04/2026  13:25            82,273 partnership_building_1.mp3
+21/04/2026  13:25            79,765 partnership_building_2.mp3
+21/04/2026  13:25            82,691 partnership_building_3.mp3
+21/04/2026  13:26            81,437 partnership_building_4.mp3
+21/04/2026  13:26            80,601 partnership_building_5.mp3
+21/04/2026  13:26            86,453 partnership_building_6.mp3
+               6 File(s)        493,220 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\analyst\partnership\pressure
+
+22/04/2026  17:23    <DIR>          .
+22/04/2026  17:22    <DIR>          ..
+21/04/2026  13:28            96,902 partnership_pressure_1.mp3
+21/04/2026  13:29            86,035 partnership_pressure_2.mp3
+21/04/2026  13:29            80,601 partnership_pressure_3.mp3
+21/04/2026  13:29            98,573 partnership_pressure_4.mp3
+21/04/2026  13:29            97,737 partnership_pressure_5.mp3
+21/04/2026  13:29           103,589 partnership_pressure_6.mp3
+               6 File(s)        563,437 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\analyst\partnership\release
+
+22/04/2026  17:23    <DIR>          .
+22/04/2026  17:22    <DIR>          ..
+21/04/2026  13:30            65,973 partnership_release_1.mp3
+21/04/2026  13:31            98,573 partnership_release_2.mp3
+21/04/2026  13:31            85,199 partnership_release_3.mp3
+21/04/2026  13:32            88,124 partnership_release_4.mp3
+21/04/2026  13:32            75,586 partnership_release_5.mp3
+21/04/2026  13:32            83,527 partnership_release_6.mp3
+               6 File(s)        496,982 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\analyst\strike
+
+22/04/2026  17:20    <DIR>          .
+22/04/2026  17:23    <DIR>          ..
+22/04/2026  17:22    <DIR>          boundary_hold
+22/04/2026  17:23    <DIR>          hold
+22/04/2026  17:23    <DIR>          rotate
+               0 File(s)              0 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\analyst\strike\boundary_hold
+
+22/04/2026  17:22    <DIR>          .
+22/04/2026  17:20    <DIR>          ..
+21/04/2026  12:39            89,378 boundary_hold_1.mp3
+21/04/2026  20:10           112,784 boundary_hold_2.mp3
+21/04/2026  20:11           104,425 boundary_hold_3.mp3
+21/04/2026  12:39            82,273 boundary_hold_4.mp3
+21/04/2026  20:12            99,409 boundary_hold_5.mp3
+21/04/2026  12:40            94,812 boundary_hold_6.mp3
+               6 File(s)        583,081 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\analyst\strike\hold
+
+22/04/2026  17:23    <DIR>          .
+22/04/2026  17:20    <DIR>          ..
+21/04/2026  20:03            98,573 strike_hold_1.mp3
+21/04/2026  12:34           102,753 strike_hold_2.mp3
+21/04/2026  12:34           106,515 strike_hold_3.mp3
+21/04/2026  20:06           109,440 strike_hold_4.mp3
+21/04/2026  12:34            91,050 strike_hold_5.mp3
+21/04/2026  20:23           105,261 strike_hold_6.mp3
+               6 File(s)        613,592 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\analyst\strike\rotate
+
+22/04/2026  17:23    <DIR>          .
+22/04/2026  17:20    <DIR>          ..
+21/04/2026  12:29            90,214 strike_rotate_1.mp3
+21/04/2026  20:29            94,812 strike_rotate_2.mp3
+21/04/2026  20:01           103,589 strike_rotate_3.mp3
+21/04/2026  12:31            95,648 strike_rotate_4.mp3
+21/04/2026  20:00            89,378 strike_rotate_5.mp3
+21/04/2026  12:31            86,035 strike_rotate_6.mp3
+               6 File(s)        559,676 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead
+
+22/04/2026  17:30    <DIR>          .
+21/04/2026  11:52    <DIR>          ..
+22/04/2026  17:06    <DIR>          dot
+22/04/2026  16:26    <DIR>          general
+22/04/2026  16:59    <DIR>          match
+22/04/2026  16:47    <DIR>          milestones
+22/04/2026  16:29    <DIR>          pressure
+22/04/2026  16:40    <DIR>          runs
+22/04/2026  17:34    <DIR>          special
+22/04/2026  16:43    <DIR>          wickets
+               0 File(s)              0 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\dot
+
+22/04/2026  17:06    <DIR>          .
+22/04/2026  17:30    <DIR>          ..
+22/04/2026  17:06    <DIR>          building
+22/04/2026  17:06    <DIR>          calm
+22/04/2026  17:07    <DIR>          extreme
+22/04/2026  17:07    <DIR>          high
+22/04/2026  17:07    <DIR>          watchful
+               0 File(s)              0 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\dot\building
+
+22/04/2026  17:06    <DIR>          .
+22/04/2026  17:06    <DIR>          ..
+20/04/2026  07:33           132,010 dot_building_1.mp3
+20/04/2026  07:34           126,159 dot_building_2.mp3
+20/04/2026  07:34           122,815 dot_building_3.mp3
+20/04/2026  07:34           155,834 dot_building_4.mp3
+20/04/2026  07:34           137,026 dot_building_5.mp3
+20/04/2026  07:35           122,815 dot_building_6.mp3
+               6 File(s)        796,659 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\dot\calm
+
+22/04/2026  17:06    <DIR>          .
+22/04/2026  17:06    <DIR>          ..
+20/04/2026  07:24            90,214 dot_calm_1.mp3
+20/04/2026  07:24           104,425 dot_calm_2.mp3
+20/04/2026  07:25           115,710 dot_calm_3.mp3
+20/04/2026  07:25           126,577 dot_calm_4.mp3
+20/04/2026  07:26            94,812 dot_calm_5.mp3
+20/04/2026  07:26           119,889 dot_calm_6.mp3
+               6 File(s)        651,627 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\dot\extreme
+
+22/04/2026  17:07    <DIR>          .
+22/04/2026  17:06    <DIR>          ..
+20/04/2026  07:38           109,022 dot_extreme_1.mp3
+20/04/2026  07:38           114,874 dot_extreme_2.mp3
+20/04/2026  07:38           105,261 dot_extreme_3.mp3
+20/04/2026  07:38           114,874 dot_extreme_4.mp3
+20/04/2026  08:40           114,874 dot_extreme_5.mp3
+20/04/2026  07:38           119,889 dot_extreme_6.mp3
+               6 File(s)        678,794 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\dot\high
+
+22/04/2026  17:07    <DIR>          .
+22/04/2026  17:06    <DIR>          ..
+20/04/2026  07:36           100,663 dot_high_1.mp3
+20/04/2026  07:36           128,248 dot_high_2.mp3
+20/04/2026  07:36           111,948 dot_high_3.mp3
+20/04/2026  07:36           108,186 dot_high_4.mp3
+20/04/2026  07:36           100,663 dot_high_5.mp3
+20/04/2026  07:37           124,487 dot_high_6.mp3
+               6 File(s)        674,195 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\dot\watchful
+
+22/04/2026  17:07    <DIR>          .
+22/04/2026  17:06    <DIR>          ..
+20/04/2026  07:28           113,202 dot_watchful_1.mp3
+20/04/2026  07:28           109,440 dot_watchful_2.mp3
+20/04/2026  07:28           126,159 dot_watchful_3.mp3
+20/04/2026  07:28           111,112 dot_watchful_4.mp3
+20/04/2026  07:29           124,487 dot_watchful_5.mp3
+20/04/2026  07:29            97,737 dot_watchful_6.mp3
+               6 File(s)        682,137 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\general
+
+22/04/2026  16:26    <DIR>          .
+22/04/2026  17:30    <DIR>          ..
+11/04/2026  15:26           115,710 general_1.mp3
+11/04/2026  15:34           109,440 general_10.mp3
+11/04/2026  15:35           110,276 general_11.mp3
+19/04/2026  19:53           110,276 general_12.mp3
+11/04/2026  15:36           104,425 general_13.mp3
+11/04/2026  15:37           118,635 general_14.mp3
+20/04/2026  08:35           125,323 general_15.mp3
+11/04/2026  15:27           111,112 general_2.mp3
+11/04/2026  15:27           103,589 general_3.mp3
+11/04/2026  15:28           108,186 general_4.mp3
+11/04/2026  15:29           118,635 general_5.mp3
+11/04/2026  15:33           116,128 general_6.mp3
+11/04/2026  15:30            99,827 general_7.mp3
+11/04/2026  15:31           119,471 general_8.mp3
+11/04/2026  15:32           105,261 general_9.mp3
+              15 File(s)      1,676,294 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\match
+
+22/04/2026  16:59    <DIR>          .
+22/04/2026  17:30    <DIR>          ..
+22/04/2026  16:56    <DIR>          chase_start
+22/04/2026  16:57    <DIR>          close
+22/04/2026  16:57    <DIR>          impossible
+22/04/2026  16:58    <DIR>          innings_end
+22/04/2026  16:59    <DIR>          result
+               0 File(s)              0 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\match\chase_start
+
+22/04/2026  16:56    <DIR>          .
+22/04/2026  16:59    <DIR>          ..
+17/04/2026  16:58           113,202 chase_start_1.mp3
+17/04/2026  16:59           106,097 chase_start_2.mp3
+17/04/2026  16:59           123,651 chase_start_3.mp3
+17/04/2026  16:59           110,276 chase_start_4.mp3
+17/04/2026  16:59           106,515 chase_start_5.mp3
+17/04/2026  17:00           106,515 chase_start_6.mp3
+17/04/2026  17:00           109,440 chase_start_7.mp3
+17/04/2026  17:00           109,022 chase_start_8.mp3
+               8 File(s)        884,718 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\match\close
+
+22/04/2026  16:57    <DIR>          .
+22/04/2026  16:59    <DIR>          ..
+15/04/2026  09:23           112,784 close_1.mp3
+20/04/2026  08:16           129,084 close_10.mp3
+15/04/2026  09:24           120,725 close_2.mp3
+15/04/2026  09:24           139,951 close_3.mp3
+15/04/2026  09:25           141,623 close_4.mp3
+15/04/2026  09:26           119,889 close_5.mp3
+20/04/2026  08:15           138,697 close_6.mp3
+20/04/2026  08:15           110,276 close_7.mp3
+20/04/2026  08:16           134,100 close_8.mp3
+20/04/2026  08:16           113,202 close_9.mp3
+              10 File(s)      1,260,331 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\match\impossible
+
+22/04/2026  16:57    <DIR>          .
+22/04/2026  16:59    <DIR>          ..
+16/04/2026  12:33           101,499 impossible_1.mp3
+16/04/2026  12:44           115,710 impossible_10.mp3
+16/04/2026  12:38           115,710 impossible_2.mp3
+16/04/2026  12:37           115,710 impossible_3.mp3
+16/04/2026  12:39           102,335 impossible_4.mp3
+16/04/2026  12:39           116,128 impossible_5.mp3
+16/04/2026  12:40           119,889 impossible_6.mp3
+16/04/2026  12:41           116,964 impossible_7.mp3
+16/04/2026  12:43           121,561 impossible_8.mp3
+16/04/2026  12:43           121,561 impossible_9.mp3
+              10 File(s)      1,147,067 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\match\innings_end
+
+22/04/2026  16:58    <DIR>          .
+22/04/2026  16:59    <DIR>          ..
+17/04/2026  15:51           132,846 first_innings_end_1.mp3
+17/04/2026  15:55           142,459 first_innings_end_2.mp3
+17/04/2026  15:56           130,338 first_innings_end_3.mp3
+17/04/2026  15:56           129,084 first_innings_end_4.mp3
+17/04/2026  15:56           136,190 first_innings_end_5.mp3
+17/04/2026  15:57           141,623 first_innings_end_6.mp3
+               6 File(s)        812,540 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\match\result
+
+22/04/2026  16:59    <DIR>          .
+22/04/2026  16:59    <DIR>          ..
+22/04/2026  16:59    <DIR>          loss
+22/04/2026  16:59    <DIR>          win
+               0 File(s)              0 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\match\result\loss
+
+22/04/2026  16:59    <DIR>          .
+22/04/2026  16:59    <DIR>          ..
+11/04/2026  13:31           129,084 loss_1.mp3
+11/04/2026  13:31           135,772 loss_2.mp3
+11/04/2026  17:39           157,088 loss_3.mp3
+               3 File(s)        421,944 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\match\result\win
+
+22/04/2026  16:59    <DIR>          .
+22/04/2026  16:59    <DIR>          ..
+11/04/2026  13:26           169,626 win_1.mp3
+11/04/2026  13:27           141,623 win_2.mp3
+11/04/2026  13:28           146,221 win_3.mp3
+               3 File(s)        457,470 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\milestones
+
+22/04/2026  16:47    <DIR>          .
+22/04/2026  17:30    <DIR>          ..
+22/04/2026  16:48    <DIR>          century
+22/04/2026  16:48    <DIR>          fifty
+               0 File(s)              0 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\milestones\century
+
+22/04/2026  16:48    <DIR>          .
+22/04/2026  16:47    <DIR>          ..
+09/04/2026  20:41            86,453 century_1.mp3
+09/04/2026  20:42            82,273 century_2.mp3
+09/04/2026  22:10            86,035 century_3.mp3
+               3 File(s)        254,761 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\milestones\fifty
+
+22/04/2026  16:48    <DIR>          .
+22/04/2026  16:47    <DIR>          ..
+09/04/2026  20:40            82,691 fifty_1.mp3
+09/04/2026  20:40            81,437 fifty_2.mp3
+09/04/2026  20:40            90,214 fifty_3.mp3
+               3 File(s)        254,342 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\pressure
+
+22/04/2026  16:29    <DIR>          .
+22/04/2026  17:30    <DIR>          ..
+22/04/2026  17:06    <DIR>          building
+22/04/2026  17:06    <DIR>          calm
+22/04/2026  17:07    <DIR>          extreme
+22/04/2026  17:07    <DIR>          high
+22/04/2026  17:07    <DIR>          watchful
+               0 File(s)              0 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\pressure\building
+
+22/04/2026  17:06    <DIR>          .
+22/04/2026  16:29    <DIR>          ..
+19/04/2026  21:58           113,202 pressure_building_1.mp3
+19/04/2026  21:58           114,874 pressure_building_2.mp3
+19/04/2026  21:58           109,440 pressure_building_3.mp3
+19/04/2026  21:58           111,948 pressure_building_4.mp3
+19/04/2026  21:59           109,022 pressure_building_5.mp3
+19/04/2026  21:59           125,323 pressure_building_6.mp3
+19/04/2026  21:59           109,022 pressure_building_7.mp3
+19/04/2026  21:59           117,799 pressure_building_8.mp3
+               8 File(s)        910,630 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\pressure\calm
+
+22/04/2026  17:06    <DIR>          .
+22/04/2026  16:29    <DIR>          ..
+19/04/2026  20:32           122,397 pressure_calm_1.mp3
+19/04/2026  20:42           111,948 pressure_calm_2.mp3
+19/04/2026  20:43           110,276 pressure_calm_3.mp3
+19/04/2026  20:43           119,471 pressure_calm_4.mp3
+19/04/2026  20:43           105,261 pressure_calm_5.mp3
+19/04/2026  20:44            96,066 pressure_calm_6.mp3
+19/04/2026  20:44           111,948 pressure_calm_7.mp3
+19/04/2026  20:44           104,425 pressure_calm_8.mp3
+               8 File(s)        881,792 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\pressure\extreme
+
+22/04/2026  17:07    <DIR>          .
+22/04/2026  16:29    <DIR>          ..
+20/04/2026  05:45           119,889 pressure_extreme_1.mp3
+20/04/2026  05:45           106,515 pressure_extreme_2.mp3
+20/04/2026  05:45           115,710 pressure_extreme_3.mp3
+20/04/2026  05:45           109,022 pressure_extreme_4.mp3
+20/04/2026  08:38           126,577 pressure_extreme_5.mp3
+20/04/2026  05:45            84,363 pressure_extreme_6.mp3
+20/04/2026  08:39           169,208 pressure_extreme_7.mp3
+20/04/2026  05:46           120,725 pressure_extreme_8.mp3
+               8 File(s)        952,009 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\pressure\high
+
+22/04/2026  17:07    <DIR>          .
+22/04/2026  16:29    <DIR>          ..
+19/04/2026  22:01           118,635 pressure_high_1.mp3
+19/04/2026  22:01           115,710 pressure_high_2.mp3
+19/04/2026  22:01           122,397 pressure_high_3.mp3
+19/04/2026  22:01           116,964 pressure_high_4.mp3
+19/04/2026  22:01           109,440 pressure_high_5.mp3
+19/04/2026  22:02           122,397 pressure_high_6.mp3
+19/04/2026  22:02           114,038 pressure_high_7.mp3
+19/04/2026  22:02           118,635 pressure_high_8.mp3
+               8 File(s)        938,216 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\pressure\watchful
+
+22/04/2026  17:07    <DIR>          .
+22/04/2026  16:29    <DIR>          ..
+20/04/2026  10:39           111,948 pressure_watchful_1.mp3
+20/04/2026  10:40           119,471 pressure_watchful_2.mp3
+20/04/2026  10:40           108,186 pressure_watchful_3.mp3
+20/04/2026  10:41           109,022 pressure_watchful_4.mp3
+20/04/2026  10:41           104,425 pressure_watchful_5.mp3
+20/04/2026  10:41           136,190 pressure_watchful_6.mp3
+20/04/2026  10:41           117,799 pressure_watchful_7.mp3
+20/04/2026  10:42           123,651 pressure_watchful_8.mp3
+               8 File(s)        930,692 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\runs
+
+22/04/2026  16:40    <DIR>          .
+22/04/2026  17:30    <DIR>          ..
+22/04/2026  16:40    <DIR>          boundary
+22/04/2026  16:38    <DIR>          singles
+22/04/2026  16:39    <DIR>          threes
+22/04/2026  16:38    <DIR>          twos
+               0 File(s)              0 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\runs\boundary
+
+22/04/2026  16:40    <DIR>          .
+22/04/2026  16:40    <DIR>          ..
+22/04/2026  16:49    <DIR>          four
+22/04/2026  16:49    <DIR>          six
+               0 File(s)              0 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\runs\boundary\four
+
+22/04/2026  16:49    <DIR>          .
+22/04/2026  16:40    <DIR>          ..
+09/04/2026  20:31            75,586 four_1.mp3
+09/04/2026  20:32            79,765 four_2.mp3
+11/04/2026  15:07           124,487 four_3.mp3
+09/04/2026  20:32            79,347 four_4.mp3
+               4 File(s)        359,185 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\runs\boundary\six
+
+22/04/2026  16:49    <DIR>          .
+22/04/2026  16:40    <DIR>          ..
+16/04/2026  11:10           140,787 six_1.mp3
+16/04/2026  11:05           135,772 six_2.mp3
+09/04/2026  20:33            82,691 six_3.mp3
+09/04/2026  20:34            87,288 six_4.mp3
+               4 File(s)        446,538 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\runs\singles
+
+22/04/2026  16:38    <DIR>          .
+22/04/2026  16:40    <DIR>          ..
+22/04/2026  17:01    <DIR>          chase
+22/04/2026  17:01    <DIR>          neutral
+22/04/2026  17:01    <DIR>          pressure
+               0 File(s)              0 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\runs\singles\chase
+
+22/04/2026  17:01    <DIR>          .
+22/04/2026  16:38    <DIR>          ..
+17/04/2026  13:31           110,276 singles_chase_1.mp3
+17/04/2026  13:31           122,397 singles_chase_2.mp3
+17/04/2026  13:55           113,202 singles_chase_3.mp3
+17/04/2026  13:56           108,186 singles_chase_4.mp3
+17/04/2026  13:56           114,874 singles_chase_5.mp3
+17/04/2026  13:57            95,648 singles_chase_6.mp3
+17/04/2026  13:57            99,827 singles_chase_7.mp3
+               7 File(s)        764,410 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\runs\singles\neutral
+
+22/04/2026  17:01    <DIR>          .
+22/04/2026  16:38    <DIR>          ..
+17/04/2026  11:13           101,499 singles_neutral_1.mp3
+17/04/2026  11:38            87,288 singles_neutral_10.mp3
+17/04/2026  11:38            90,214 singles_neutral_11.mp3
+17/04/2026  11:39            88,960 singles_neutral_12.mp3
+17/04/2026  11:39            82,691 singles_neutral_13.mp3
+17/04/2026  11:39            88,124 singles_neutral_14.mp3
+17/04/2026  11:39            71,824 singles_neutral_15.mp3
+17/04/2026  11:34            91,050 singles_neutral_2.mp3
+17/04/2026  11:35            93,976 singles_neutral_3.mp3
+17/04/2026  11:36            94,812 singles_neutral_4.mp3
+17/04/2026  11:36           109,440 singles_neutral_5.mp3
+17/04/2026  11:37            97,737 singles_neutral_6.mp3
+17/04/2026  11:37            96,066 singles_neutral_7.mp3
+17/04/2026  11:38            91,886 singles_neutral_8.mp3
+17/04/2026  11:38            97,737 singles_neutral_9.mp3
+              15 File(s)      1,383,304 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\runs\singles\pressure
+
+22/04/2026  17:01    <DIR>          .
+22/04/2026  16:38    <DIR>          ..
+17/04/2026  13:27            99,409 singles_pressure_1.mp3
+17/04/2026  13:27            97,737 singles_pressure_2.mp3
+17/04/2026  13:27            98,573 singles_pressure_3.mp3
+17/04/2026  13:28            88,124 singles_pressure_4.mp3
+17/04/2026  13:28            88,124 singles_pressure_5.mp3
+17/04/2026  13:29           102,335 singles_pressure_6.mp3
+17/04/2026  13:28            82,691 singles_pressure_7.mp3
+17/04/2026  13:29            86,035 singles_pressure_8.mp3
+               8 File(s)        743,028 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\runs\threes
+
+22/04/2026  16:39    <DIR>          .
+22/04/2026  16:40    <DIR>          ..
+22/04/2026  16:37    <DIR>          chase
+22/04/2026  16:36    <DIR>          neutral
+22/04/2026  16:38    <DIR>          pressure
+               0 File(s)              0 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\runs\threes\chase
+
+22/04/2026  16:37    <DIR>          .
+22/04/2026  16:39    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\runs\threes\neutral
+
+22/04/2026  16:36    <DIR>          .
+22/04/2026  16:39    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\runs\threes\pressure
+
+22/04/2026  16:38    <DIR>          .
+22/04/2026  16:39    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\runs\twos
+
+22/04/2026  16:38    <DIR>          .
+22/04/2026  16:40    <DIR>          ..
+22/04/2026  17:01    <DIR>          chase
+22/04/2026  17:01    <DIR>          neutral
+22/04/2026  17:01    <DIR>          pressure
+               0 File(s)              0 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\runs\twos\chase
+
+22/04/2026  17:01    <DIR>          .
+22/04/2026  16:38    <DIR>          ..
+17/04/2026  14:12           126,159 two_chase_1.mp3
+17/04/2026  14:12           106,515 two_chase_2.mp3
+17/04/2026  14:12           120,725 two_chase_3.mp3
+17/04/2026  14:13           113,202 two_chase_4.mp3
+17/04/2026  14:13           119,889 two_chase_5.mp3
+               5 File(s)        586,490 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\runs\twos\neutral
+
+22/04/2026  17:01    <DIR>          .
+22/04/2026  16:38    <DIR>          ..
+17/04/2026  14:03           100,663 two_neutral_1.mp3
+17/04/2026  14:06            90,214 two_neutral_10.mp3
+17/04/2026  14:03           111,948 two_neutral_2.mp3
+17/04/2026  14:05           106,515 two_neutral_3.mp3
+17/04/2026  14:05            92,722 two_neutral_4.mp3
+17/04/2026  14:05           103,589 two_neutral_5.mp3
+17/04/2026  14:05            96,066 two_neutral_6.mp3
+17/04/2026  14:06           102,335 two_neutral_7.mp3
+17/04/2026  14:06           105,261 two_neutral_8.mp3
+17/04/2026  14:06            85,199 two_neutral_9.mp3
+              10 File(s)        994,512 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\runs\twos\pressure
+
+22/04/2026  17:01    <DIR>          .
+22/04/2026  16:38    <DIR>          ..
+17/04/2026  14:08           105,261 two_pressure_1.mp3
+17/04/2026  14:09            99,409 two_pressure_2.mp3
+17/04/2026  14:09            86,453 two_pressure_3.mp3
+17/04/2026  14:09            88,124 two_pressure_4.mp3
+17/04/2026  14:09            79,347 two_pressure_5.mp3
+               5 File(s)        458,594 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\special
+
+22/04/2026  17:34    <DIR>          .
+22/04/2026  17:30    <DIR>          ..
+22/04/2026  17:33    <DIR>          drinks
+22/04/2026  17:33    <DIR>          dropped_catch
+22/04/2026  17:33    <DIR>          drs_lose
+22/04/2026  17:33    <DIR>          drs_win
+22/04/2026  17:33    <DIR>          injury
+22/04/2026  17:34    <DIR>          legendary_ball
+22/04/2026  17:34    <DIR>          new_ball
+22/04/2026  17:34    <DIR>          no_ball
+22/04/2026  17:34    <DIR>          weather
+               0 File(s)              0 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\special\drinks
+
+22/04/2026  17:33    <DIR>          .
+22/04/2026  17:34    <DIR>          ..
+17/04/2026  15:05           120,725 drinks_1.mp3
+               1 File(s)        120,725 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\special\dropped_catch
+
+22/04/2026  17:33    <DIR>          .
+22/04/2026  17:34    <DIR>          ..
+09/04/2026  20:43            78,511 dropped_catch_1.mp3
+               1 File(s)         78,511 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\special\drs_lose
+
+22/04/2026  17:33    <DIR>          .
+22/04/2026  17:34    <DIR>          ..
+11/04/2026  07:24            77,675 drs_loss_1.mp3
+               1 File(s)         77,675 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\special\drs_win
+
+22/04/2026  17:33    <DIR>          .
+22/04/2026  17:34    <DIR>          ..
+09/04/2026  20:43            95,648 drs_win_1.mp3
+               1 File(s)         95,648 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\special\injury
+
+22/04/2026  17:33    <DIR>          .
+22/04/2026  17:34    <DIR>          ..
+09/04/2026  20:44            86,035 injury_1.mp3
+               1 File(s)         86,035 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\special\legendary_ball
+
+22/04/2026  17:34    <DIR>          .
+22/04/2026  17:34    <DIR>          ..
+20/04/2026  08:50           114,038 legendary_ball_1.mp3
+               1 File(s)        114,038 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\special\new_ball
+
+22/04/2026  17:34    <DIR>          .
+22/04/2026  17:34    <DIR>          ..
+20/04/2026  08:50           119,471 new_ball_1.mp3
+               1 File(s)        119,471 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\special\no_ball
+
+22/04/2026  17:34    <DIR>          .
+22/04/2026  17:34    <DIR>          ..
+16/04/2026  09:36            94,812 no_ball_1.mp3
+               1 File(s)         94,812 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\special\weather
+
+22/04/2026  17:34    <DIR>          .
+22/04/2026  17:34    <DIR>          ..
+09/04/2026  20:44            79,347 weather_1.mp3
+               1 File(s)         79,347 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\wickets
+
+22/04/2026  16:43    <DIR>          .
+22/04/2026  17:30    <DIR>          ..
+22/04/2026  16:44    <DIR>          bowled
+22/04/2026  16:44    <DIR>          caught
+22/04/2026  16:45    <DIR>          lbw
+22/04/2026  17:34    <DIR>          runout
+22/04/2026  17:01    <DIR>          stumped
+               0 File(s)              0 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\wickets\bowled
+
+22/04/2026  16:44    <DIR>          .
+22/04/2026  16:43    <DIR>          ..
+09/04/2026  20:34            69,316 bowled_1.mp3
+09/04/2026  20:34            72,660 bowled_2.mp3
+09/04/2026  20:35            73,914 bowled_3.mp3
+               3 File(s)        215,890 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\wickets\caught
+
+22/04/2026  16:44    <DIR>          .
+22/04/2026  16:43    <DIR>          ..
+09/04/2026  20:37            70,152 caught_1.mp3
+11/04/2026  15:20           118,635 caught_2.mp3
+21/04/2026  19:53           104,425 caught_3.mp3
+               3 File(s)        293,212 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\wickets\lbw
+
+22/04/2026  16:45    <DIR>          .
+22/04/2026  16:43    <DIR>          ..
+09/04/2026  20:38            79,765 lbw_1.mp3
+09/04/2026  20:38            75,586 lbw_2.mp3
+               2 File(s)        155,351 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\wickets\runout
+
+22/04/2026  17:34    <DIR>          .
+22/04/2026  16:43    <DIR>          ..
+09/04/2026  20:39            66,391 runout_1.mp3
+09/04/2026  20:39            80,601 runout_2.mp3
+               2 File(s)        146,992 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\commentary\lead\wickets\stumped
+
+22/04/2026  17:01    <DIR>          .
+22/04/2026  16:43    <DIR>          ..
+09/04/2026  20:38            78,511 stumped_1.mp3
+09/04/2026  20:39            71,824 stumped_2.mp3
+               2 File(s)        150,335 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\crowd
+
+21/04/2026  11:53    <DIR>          .
+22/04/2026  17:37    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\sfx
+
+21/04/2026  13:48    <DIR>          .
+22/04/2026  17:37    <DIR>          ..
+08/04/2026  20:31           753,849 ambient_sounds.mp3
+21/04/2026  09:21            82,640 bat_crack.mp3
+09/04/2026  12:23           334,486 crowd_four.mp3
+09/04/2026  12:23           334,486 crowd_single.mp3
+20/04/2026  13:42        12,002,840 crowd_six.mp3
+09/04/2026  12:23           334,486 crowd_two.mp3
+22/03/2026  20:59           315,705 crowd_wicketcheer.mp3
+15/04/2026  15:09           102,519 crowd_wicketgroan.mp3
+07/04/2026  17:26         3,227,831 drs_lose.mp3
+07/04/2026  17:27         3,227,831 drs_win.mp3
+07/04/2026  12:30         3,227,835 menu.mp3
+07/04/2026  08:31         3,227,835 owzat.mp3
+22/03/2026  21:46           212,260 roll.mp3
+09/04/2026  12:23           334,486 triple.mp3
+15/04/2026  07:50            85,199 wicket_catch_1.mp3
+15/04/2026  07:55            93,976 wicket_catch_2.mp3
+15/04/2026  07:57           106,515 wicket_catch_3.mp3
+              17 File(s)     28,004,779 bytes
+
+ Directory of D:\AppDev\PitchandDice\src\assets\sounds\umpire
+
+21/04/2026  11:53    <DIR>          .
+22/04/2026  17:37    <DIR>          ..
+               0 File(s)              0 bytes
+
+     Total Files Listed:
+             276 File(s)     55,257,751 bytes
+             224 Dir(s)  15,768,684,920,832 bytes free

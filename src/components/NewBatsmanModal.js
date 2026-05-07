@@ -23,13 +23,17 @@ export const NewBatsmanModal = ({ visible, wicketInfo, onConfirm }) => {
 
   useEffect(() => {
     if (visible) {
-      setName('New Batsman');
-      setSkill(5);
-      setError(null);
+      // Defer state updates to avoid concurrent rendering conflict
+      const id = setTimeout(() => {
+        setName('New Batsman');
+        setSkill(5);
+        setError(null);
+      }, 0);
       scaleAnim.setValue(0.85);
       Animated.spring(scaleAnim, {
         toValue: 1, friction: 7, tension: 80, useNativeDriver: true,
       }).start();
+      return () => clearTimeout(id);
     }
   }, [visible]);
 

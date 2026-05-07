@@ -4,20 +4,86 @@
 //  Shows New Match, Continue (if saved), Match History.
 // ═══════════════════════════════════════════════════════
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { startMenuMusic, isAudioEnabled, isAudioMuted, setAudioMuted } from '../engine/soundEngine';
 import {
   View, Text, TouchableOpacity,
-  StyleSheet, StatusBar, ImageBackground,
+  StyleSheet, StatusBar,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { COLOURS, FONTS, SIZES, SPACE } from '../constants/theme';
+import { COLOURS, FONTS, SIZES, SPACE, getFormatScoreboardLabel } from '../constants/theme';
+import { HelpScreen } from './HelpScreen';
 
-export const HomeScreen = ({ onNewMatch, onContinue, onHistory, hasResumableMatch }) => {
+export const HomeScreen = ({
+  onNewMatch, onContinue, onHistory, hasResumableMatch, resumableMatch,
+}) => {
+  const [showHelp, setShowHelp] = useState(false);
+  const [soundMuted, setSoundMuted] = useState(() => isAudioMuted());
+  const [muteBusy, setMuteBusy] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (isAudioEnabled()) {
+        if (__DEV__) console.log('[audio-home] start menu music requested');
+        startMenuMusic()
+          .then((ok) => {
+            if (__DEV__) console.log('[audio-home] start menu music success/fail', { ok });
+          })
+          .catch((e) => {
+            if (__DEV__) console.log('[audio-home] start menu music error', e?.message ?? e);
+          });
+      } else if (__DEV__) {
+        console.log('[audio-home] start menu music skipped: audio not enabled');
+      }
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    setSoundMuted(isAudioMuted());
+  }, []);
+
+  const toggleSoundMute = async () => {
+    if (__DEV__) {
+      console.log(
+        `[audio-ui][home] press received localMuted=${soundMuted} muteBusy=${muteBusy} engineMuted=${isAudioMuted()}`
+      );
+    }
+    if (muteBusy) return;
+    setMuteBusy(true);
+    const next = !soundMuted;
+    if (__DEV__) {
+      console.log(
+        `[audio-ui][home] before toggle nextMuted=${next} localMuted=${soundMuted} muteBusy=${muteBusy} engineMuted=${isAudioMuted()}`
+      );
+    }
+    try {
+      await setAudioMuted(next, next ? null : { screen: 'home' });
+    } finally {
+      // Source-of-truth sync prevents UI drift if toggle was triggered elsewhere.
+      const engineAfter = isAudioMuted();
+      if (__DEV__) {
+        console.log(
+          `[audio-ui][home] after toggle engineMuted=${engineAfter} localMuted(beforeSet)=${soundMuted} muteBusy(beforeSet)=${muteBusy}`
+        );
+      }
+      setSoundMuted(engineAfter);
+      setMuteBusy(false);
+      if (__DEV__) {
+        console.log(
+          `[audio-ui][home] completion localMuted(target)=${engineAfter} muteBusy(target)=false buttonDisabled=${false}`
+        );
+      }
+    }
+  };
+
+  if (showHelp) return <HelpScreen onBack={() => setShowHelp(false)} />;
+
   return (
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="light-content" backgroundColor={COLOURS.ink} />
 
-      {/* Background grid texture */}
+      {/* Background subtle texture / tint */}
       <View style={styles.bgGrid} pointerEvents="none" />
 
       <View style={styles.container}>
@@ -46,27 +112,37 @@ export const HomeScreen = ({ onNewMatch, onContinue, onHistory, hasResumableMatc
               <View style={styles.continueDot} />
               <View style={styles.continueTxt}>
                 <Text style={styles.continueBtnText}>CONTINUE MATCH</Text>
+                {resumableMatch?.format ? (
+                  <Text style={styles.continueFmt}>{getFormatScoreboardLabel(resumableMatch.format)}</Text>
+                ) : null}
                 <Text style={styles.continueBtnSub}>Resume your saved game</Text>
               </View>
               <Text style={styles.continueArrow}>→</Text>
             </TouchableOpacity>
           )}
 
+          <TouchableOpacity style={styles.secondaryBtn} onPress={() => setShowHelp(true)} activeOpacity={0.85}>
+            <Text style={styles.secondaryBtnText}>HOW TO PLAY</Text>
+            <Text style={styles.secondaryBtnSub}>Game guide & tips</Text>
+          </TouchableOpacity>
+
           <TouchableOpacity style={styles.secondaryBtn} onPress={onHistory} activeOpacity={0.85}>
             <Text style={styles.secondaryBtnText}>MATCH HISTORY</Text>
             <Text style={styles.secondaryBtnSub}>Last 5 matches</Text>
           </TouchableOpacity>
 
-        </View>
+          <TouchableOpacity
+            style={[styles.secondaryBtn, soundMuted && styles.muteBtn]}
+            onPress={toggleSoundMute}
+            disabled={muteBusy}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.secondaryBtnText}>{soundMuted ? 'UNMUTE SOUND' : 'MUTE SOUND'}</Text>
+            <Text style={styles.secondaryBtnSub}>
+              {soundMuted ? 'Restore menu music and effects' : 'Silence all audio — tap again to recover'}
+            </Text>
+          </TouchableOpacity>
 
-        {/* Footer */}
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>PHASE 4 · EXPO SDK 54</Text>
-          <View style={styles.footerDots}>
-            {[...Array(5)].map((_, i) => (
-              <View key={i} style={styles.footerDot} />
-            ))}
-          </View>
         </View>
 
       </View>
@@ -89,12 +165,12 @@ const styles = StyleSheet.create({
   container: {
     flex:           1,
     paddingHorizontal: SPACE.xl,
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     paddingVertical: SPACE.xl,
   },
 
   // ── Logo ──────────────────────────────
-  logoSection: { alignItems: 'center', marginTop: SPACE.xxl },
+  logoSection: { alignItems: 'center', marginBottom: SPACE.xl },
   logoBox: {
     flexDirection:  'row',
     alignItems:     'baseline',
@@ -154,6 +230,7 @@ const styles = StyleSheet.create({
     fontSize:     SIZES.xxl,
     letterSpacing: 5,
     color:        COLOURS.ink,
+    textAlign:    'center',
   },
   primaryBtnSub: {
     fontFamily:   FONTS.mono,
@@ -162,6 +239,7 @@ const styles = StyleSheet.create({
     opacity:      0.6,
     letterSpacing: 1,
     marginTop:    SPACE.xs,
+    textAlign:    'center',
   },
 
   continueBtn: {
@@ -181,18 +259,28 @@ const styles = StyleSheet.create({
     borderRadius:    5,
     backgroundColor: COLOURS.runs1,
   },
-  continueTxt:     { flex: 1 },
+  continueTxt:     { flex: 1, alignItems: 'center' },
   continueBtnText: {
     fontFamily:   FONTS.display,
     fontSize:     SIZES.lg,
     letterSpacing: 3,
     color:        COLOURS.gold,
+    textAlign:    'center',
   },
   continueBtnSub: {
     fontFamily: FONTS.mono,
     fontSize:   SIZES.xs,
     color:      COLOURS.dot,
     marginTop:  2,
+    textAlign:  'center',
+  },
+  continueFmt: {
+    fontFamily: FONTS.mono,
+    fontSize:   SIZES.xs,
+    color:      COLOURS.gold,
+    letterSpacing: 2,
+    marginTop:  SPACE.xs,
+    textAlign:  'center',
   },
   continueArrow: {
     fontFamily: FONTS.display,
@@ -214,32 +302,18 @@ const styles = StyleSheet.create({
     fontSize:     SIZES.lg,
     letterSpacing: 4,
     color:        COLOURS.cream,
+    textAlign:    'center',
   },
   secondaryBtnSub: {
     fontFamily: FONTS.mono,
     fontSize:   SIZES.xs,
     color:      COLOURS.dot,
     marginTop:  SPACE.xs,
+    textAlign:  'center',
+  },
+  muteBtn: {
+    borderColor:     'rgba(127,140,141,0.35)',
+    backgroundColor: 'rgba(127,140,141,0.12)',
   },
 
-  // ── Footer ────────────────────────────
-  footer: { alignItems: 'center', gap: SPACE.sm },
-  footerText: {
-    fontFamily:   FONTS.mono,
-    fontSize:     SIZES.xs,
-    color:        COLOURS.dot,
-    opacity:      0.4,
-    letterSpacing: 2,
-  },
-  footerDots: {
-    flexDirection: 'row',
-    gap:           SPACE.xs,
-  },
-  footerDot: {
-    width:           4,
-    height:          4,
-    borderRadius:    2,
-    backgroundColor: COLOURS.dot,
-    opacity:         0.3,
-  },
 });

@@ -1,6 +1,13 @@
 # Cricket Dice Game — Role–Purpose–Domain (RPD)
 ### Vibe Coding Foundation Document | v1.0
 
+All numeric values, probabilities, and exact mechanics
+should be validated in `context-brief.md` or `src/engine`.
+
+**How to use this file:** This is the **design and intent** document (north star, tone, domain language). It is **not** guaranteed to match every implemented rule — mechanics evolve in code. For **what actually shipped**, the folder map, and phases, read [`context-brief.md`](./context-brief.md). For **where to edit code**, read [`pitch-and-dice-overview.md`](./pitch-and-dice-overview.md). Full doc order: [`../../README.md`](../../README.md).
+
+**If RPD text conflicts with the codebase, trust the code + CONTEXT_BRIEF** unless you are explicitly redesigning a feature.
+
 ---
 
 ## ⚡ THE VIBE IN ONE LINE
@@ -238,36 +245,13 @@ Once per match, or triggered by double-six on consecutive D12 rolls:
 
 ---
 
-### 3.8 — Vibe Coding Implementation Roadmap
+### 3.8 — Implementation status (living app)
 
-#### Phase 1 — Core Engine (MVP)
-- [ ] D6 base outcome resolver
-- [ ] Shot type selection UI
-- [ ] Basic batting/bowling decision tree
-- [ ] Wicket sub-roll system
-- [ ] Score tracker
+The checklist below was an **original roadmap**. The **live** phase list, feature flags, and file references are maintained in **[`context-brief.md`](./context-brief.md)** (Phases 1–5). Treat this RPD section as **historical context** only.
 
-#### Phase 2 — Momentum & Modifiers
-- [ ] Momentum engine (-10 to +10 scale)
-- [ ] Skill rating system for players
-- [ ] Pitch condition modifiers
-- [ ] Field placement pre-over UI
+Shipped highlights (non-exhaustive): dice resolver + shot/aggression UI, momentum, skills, pitch, bowling + field, D20-style special events, pressure/partnership, AsyncStorage, AI modes, teams/squads, sound engine, dice animation, milestones.
 
-#### Phase 3 — Format Differentiation
-- [ ] T20 Power Play / Death Over rules
-- [ ] ODI slog overs
-- [ ] Test session/fatigue system
-
-#### Phase 4 — Advanced Dice Mechanics
-- [ ] D8/D10/D12 extended pools
-- [ ] Special Events D20 system
-- [ ] Edge case outcomes (no-ball, wide, DRS)
-
-#### Phase 5 — Polish & Feel
-- [ ] Ball-by-ball narrative feedback
-- [ ] Momentum visual indicator
-- [ ] Match statistics summary
-- [ ] Replay / scoreboard
+Not every aspirational bullet in §3 (e.g. optional “running intent” tiers, or Test-day simulation depth) may be implemented exactly as written — validate in `src/engine/` before assuming behaviour.
 
 ---
 
@@ -298,3 +282,12 @@ When prompting AI during development, anchor every session to these pillars:
 ---
 
 *RPD v1.0 — Refine this document as mechanics are tested and iterated.*
+
+---
+
+## 🔗 See Also
+
+- [Context Brief](./context-brief.md)
+- [Pitch and Dice Overview](./pitch-and-dice-overview.md)
+- [Rules](../gameplay/rules.md)
+- [Documentation Index](../README.md)

@@ -1,6 +1,7 @@
 // ─────────────────────────────────────────
 //  OutcomeDisplay.js
-//  Shows last ball result + dice roll
+//  "LAST BALL" panel — committed delivery only (lastOutcome).
+//  Do not pass pending/provisional outcomes; dice-in-flight uses DiceRollAnimation.
 // ─────────────────────────────────────────
 
 import React, { useRef, useEffect } from 'react';

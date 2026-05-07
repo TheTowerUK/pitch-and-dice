@@ -12,12 +12,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLOURS, FONTS, SIZES, SPACE } from '../constants/theme';
 import { loadMatchHistory, clearAllData } from '../engine/storageEngine';
 import { PITCH_TYPES } from '../engine/pitchEngine';
+import { MatchDetailScreen } from './MatchDetailScreen';
 
-const MatchCard = ({ match }) => {
+const MatchCard = ({ match, onPress }) => {
   const pitchInfo = PITCH_TYPES[match.pitchType] || PITCH_TYPES.flat;
 
   return (
-    <View style={styles.card}>
+    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.85}>
       {/* Header row */}
       <View style={styles.cardHeader}>
         <View style={styles.headerLeft}>
@@ -57,7 +58,10 @@ const MatchCard = ({ match }) => {
         <Text style={styles.playerChip}>🏏 {match.batsman}</Text>
         <Text style={styles.playerChip}>⚾ {match.bowler}</Text>
       </View>
-    </View>
+      <View style={styles.detailHint}>
+        <Text style={styles.detailHintText}>TAP FOR DETAILS →</Text>
+      </View>
+    </TouchableOpacity>
   );
 };
 
@@ -71,6 +75,7 @@ const StatChip = ({ label, value }) => (
 export const MatchHistoryScreen = ({ onBack }) => {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedMatch, setSelectedMatch] = useState(null);
 
   useEffect(() => {
     loadMatchHistory().then(h => {
@@ -82,7 +87,18 @@ export const MatchHistoryScreen = ({ onBack }) => {
   const handleClear = async () => {
     await clearAllData();
     setHistory([]);
+    setSelectedMatch(null);
   };
+
+  // Show match detail when one is selected
+  if (selectedMatch) {
+    return (
+      <MatchDetailScreen
+        match={selectedMatch}
+        onBack={() => setSelectedMatch(null)}
+      />
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -116,7 +132,11 @@ export const MatchHistoryScreen = ({ onBack }) => {
         )}
 
         {!loading && history.map((match, i) => (
-          <MatchCard key={match.id || i} match={match} />
+          <MatchCard
+            key={match.id || i}
+            match={match}
+            onPress={() => setSelectedMatch(match)}
+          />
         ))}
       </ScrollView>
 
@@ -256,6 +276,18 @@ const styles = StyleSheet.create({
     fontSize:   SIZES.xs,
     color:      COLOURS.dot,
     flex:       1,
+  },
+
+  detailHint: {
+    marginTop: SPACE.sm,
+    alignItems: 'flex-end',
+  },
+  detailHintText: {
+    fontFamily: FONTS.mono,
+    fontSize: 10,
+    color: COLOURS.gold,
+    letterSpacing: 2,
+    opacity: 0.7,
   },
 
   empty: { alignItems: 'center', paddingTop: SPACE.xxl * 2 },

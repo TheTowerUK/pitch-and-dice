@@ -9,9 +9,24 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const KEYS = {
   CURRENT_MATCH:  'pitchdice_current_match',
   MATCH_HISTORY:  'pitchdice_match_history',
+  AUDIO_MUTED:    'pitchdice_audio_muted',
 };
 
 const MAX_HISTORY = 5;
+
+/** Phases where a match is in progress and should be persisted / offered as Continue */
+export const IN_PROGRESS_MATCH_PHASES = new Set([
+  'batting',
+  'wicket_pending',
+  'over_complete',
+  'special_event',
+  'bowler_select',
+  'field_setup',
+  'new_batsman',
+]);
+
+export const isResumableInProgressMatch = (s) =>
+  !!s?.gamePhase && IN_PROGRESS_MATCH_PHASES.has(s.gamePhase);
 
 // ─────────────────────────────────────────
 //  SAVE CURRENT MATCH STATE
@@ -85,26 +100,88 @@ export const loadMatchHistory = async () => {
 };
 
 // ─────────────────────────────────────────
+//  AUDIO MUTE PREFERENCE (persisted)
+// ─────────────────────────────────────────
+export const loadAudioMuted = async () => {
+  try {
+    const raw = await AsyncStorage.getItem(KEYS.AUDIO_MUTED);
+    if (raw == null) return false;
+    return raw === '1' || raw === 'true';
+  } catch (e) {
+    return false;
+  }
+};
+
+export const saveAudioMuted = async (muted) => {
+  try {
+    await AsyncStorage.setItem(KEYS.AUDIO_MUTED, muted ? '1' : '0');
+  } catch (e) {
+    console.warn('Failed to save audio mute preference:', e);
+  }
+};
+
+// ─────────────────────────────────────────
 //  BUILD MATCH SUMMARY
 //  Lightweight object saved to history
 // ─────────────────────────────────────────
-export const buildMatchSummary = (state, overDisplay, runRate) => ({
-  id:          Date.now(),
-  date:        new Date().toLocaleDateString('en-GB'),
-  format:      state.format,
-  innings:     state.innings,
-  runs:        state.runs,
-  wickets:     state.wickets,
-  overs:       overDisplay,
-  boundaries:  state.boundaries,
-  sixes:       state.sixes,
-  runRate,
-  target:      state.target || null,
-  result:      buildResultString(state),
-  batsman:     state.batsman?.name || 'Unknown',
-  bowler:      state.bowler?.name  || 'Unknown',
-  pitchType:   state.pitchType     || 'flat',
-});
+export const buildMatchSummary = (state, overDisplay, runRate) => {
+  // Determine winner on a 2-innings match
+  let winner = null;
+  if (state.innings === 2 && state.target) {
+    if (state.runs >= state.target)      winner = 'chasing';
+    else if (state.wickets >= 10)        winner = 'defending';
+    else                                  winner = 'defending'; // overs exhausted
+  }
+
+  return {
+    id:          Date.now(),
+    date:        new Date().toLocaleDateString('en-GB'),
+    format:      state.format,
+    innings:     state.innings,
+    runs:        state.runs,
+    wickets:     state.wickets,
+    overs:       overDisplay,
+    boundaries:  state.boundaries,
+    sixes:       state.sixes,
+    dots:        state.dots,
+    runRate,
+    target:      state.target || null,
+    result:      buildResultString(state),
+    batsman:     state.batsman?.name || 'Unknown',
+    bowler:      state.bowler?.name  || 'Unknown',
+    pitchType:   state.pitchType     || 'flat',
+    winner,
+
+    // Detailed match data — v2 schema
+    schemaVersion: 2,
+    innings1: state.innings1Stats ? {
+      runs:         state.innings1Stats.runs,
+      wickets:      state.innings1Stats.wickets,
+      overs:        state.innings1Stats.overs,
+      boundaries:   state.innings1Stats.boundaries,
+      sixes:        state.innings1Stats.sixes,
+      dots:         state.innings1Stats.dots,
+      teamName:     state.innings1Stats.teamName,
+      teamFlag:     state.innings1Stats.teamFlag,
+      battingSquad: state.innings1Stats.battingSquad,
+      bowlingSquad: state.innings1Stats.bowlingSquad,
+      commentary:   state.innings1Stats.commentary || [],
+    } : null,
+    innings2: state.innings === 2 ? {
+      runs:         state.runs,
+      wickets:      state.wickets,
+      overs:        overDisplay,
+      boundaries:   state.boundaries,
+      sixes:        state.sixes,
+      dots:         state.dots,
+      teamName:     state.battingSquad?.teamName,
+      teamFlag:     state.battingSquad?.flag,
+      battingSquad: state.battingSquad,
+      bowlingSquad: state.bowlingSquad,
+      commentary:   state.commentary || [],
+    } : null,
+  };
+};
 
 const buildResultString = (state) => {
   if (state.target && state.runs >= state.target) {

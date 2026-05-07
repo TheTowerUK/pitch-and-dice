@@ -1,0 +1,80 @@
+{
+  "generatedAt": "2026-04-24T05:43:10.140Z",
+  "iterations": 20,
+  "poolFrequency": [
+    {
+      "pool": "lead.six",
+      "count": 4
+    },
+    {
+      "pool": "lead.four",
+      "count": 3
+    },
+    {
+      "pool": "lead.general",
+      "count": 2
+    },
+    {
+      "pool": "lead.bowled",
+      "count": 2
+    },
+    {
+      "pool": "lead.singles_neutral",
+      "count": 2
+    },
+    {
+      "pool": "lead.dot_high",
+      "count": 2
+    },
+    {
+      "pool": "lead.run_out",
+      "count": 1
+    },
+    {
+      "pool": "analyst.boundary_hold",
+      "count": 1
+    },
+    {
+      "pool": "lead.two_neutral",
+      "count": 1
+    },
+    {
+      "pool": "lead.pressure_extreme",
+      "count": 1
+    },
+    {
+      "pool": "lead.caught",
+      "count": 1
+    }
+  ],
+  "clipFrequencyForPoolsOver3": {
+    "lead.six": [
+      {
+        "clip": "cmt.lead.six_2",
+        "count": 1
+      },
+      {
+        "clip": "cmt.lead.six_4",
+        "count": 1
+      },
+      {
+        "clip": "cmt.lead.six_5",
+        "count": 1
+      },
+      {
+        "clip": "cmt.lead.six_6",
+        "count": 1
+      }
+    ]
+  },
+  "analyst": {
+    "allowed": 1,
+    "skipped": 14
+  },
+  "general": {
+    "allowed": 2,
+    "blocked": 8
+  },
+  "repeatedClipWithinRecentWindow": [],
+  "invalidExtremeUsage": []
+}

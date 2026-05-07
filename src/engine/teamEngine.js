@@ -31,9 +31,32 @@ export const makeSquadState = (team) => ({
     batted:    false,   // has batted
   })),
   // Bowling tracking
-  oversBowled:  {},    // { playerId: overCount }
+  oversBowled:    {},  // { playerId: overCount }
+  runsConceded:   {},  // { playerId: runsTotal }
+  wicketsTaken:   {},  // { playerId: wicketCount }
   currentBowlerIdx: null,
 });
+
+// ─────────────────────────────────────────
+//  UPDATE BOWLER BALL STATS
+//  Call after every ball with runs scored and whether a wicket fell
+// ─────────────────────────────────────────
+export const updateBowlerBallStats = (squadState, runs, isWicket) => {
+  const bowler = getCurrentBowler(squadState);
+  if (!bowler) return squadState;
+  const id = bowler.id;
+  return {
+    ...squadState,
+    runsConceded: {
+      ...squadState.runsConceded,
+      [id]: (squadState.runsConceded[id] || 0) + (runs || 0),
+    },
+    wicketsTaken: {
+      ...squadState.wicketsTaken,
+      [id]: (squadState.wicketsTaken[id] || 0) + (isWicket ? 1 : 0),
+    },
+  };
+};
 
 // ─────────────────────────────────────────
 //  GET CURRENT BATSMEN
@@ -50,6 +73,13 @@ export const getCurrentBatsmen = (squadState) => {
 export const getStriker = (squadState) => {
   const { players, currentBatsmen } = squadState;
   return players[currentBatsmen[0]] || null;
+};
+
+/** Swap who is on strike vs non-striker (indices 0/1 in `currentBatsmen`). */
+export const swapStrikerEnds = (squadState) => {
+  if (!squadState?.currentBatsmen || squadState.currentBatsmen.length < 2) return squadState;
+  const [a, b] = squadState.currentBatsmen;
+  return { ...squadState, currentBatsmen: [b, a] };
 };
 
 // ─────────────────────────────────────────
@@ -102,7 +132,7 @@ export const sendInNextBatsman = (squadState, wicketBatsmanIdx) => {
 // ─────────────────────────────────────────
 //  UPDATE BATSMAN STATS (per ball)
 // ─────────────────────────────────────────
-export const updateBatsmanStats = (squadState, runs, isFour, isSix) => {
+export const updateBatsmanStats = (squadState, runs, isFour, isSix, countBall = true) => {
   const striker = getStriker(squadState);
   if (!striker) return squadState;
 
@@ -111,7 +141,7 @@ export const updateBatsmanStats = (squadState, runs, isFour, isSix) => {
     return {
       ...entry,
       runs:   entry.runs + runs,
-      balls:  entry.balls + 1,
+      balls:  countBall ? entry.balls + 1 : entry.balls,
       fours:  isFour ? entry.fours + 1 : entry.fours,
       sixes:  isSix  ? entry.sixes + 1 : entry.sixes,
       batting: true,

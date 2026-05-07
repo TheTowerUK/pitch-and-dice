@@ -8,7 +8,7 @@ import * as Haptics from 'expo-haptics';
 import { COLOURS, FONTS, SIZES, SPACE } from '../constants/theme';
 import { SHOT_CONFIG } from '../engine/diceEngine';
 
-export const RollButton = ({ selectedShot, onRoll, disabled, gameMode = 'manual' }) => {
+export const RollButton = ({ selectedShot, onRoll, disabled, gameMode = 'manual', statusLabel = null }) => {
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const handlePress = () => {
@@ -20,13 +20,15 @@ export const RollButton = ({ selectedShot, onRoll, disabled, gameMode = 'manual'
     onRoll();
   };
 
-  let label;
-  if (gameMode === 'bowling') {
-    label = 'BOWL — AI BATS';
-  } else if (selectedShot) {
-    label = `ROLL ${SHOT_CONFIG[selectedShot].label}`;
-  } else {
-    label = 'SELECT A SHOT';
+  let label = statusLabel;
+  if (!label) {
+    if (gameMode === 'bowling') {
+      label = 'BOWL — AI BATS';
+    } else if (selectedShot) {
+      label = `ROLL ${SHOT_CONFIG[selectedShot].label}`;
+    } else {
+      label = 'SELECT A SHOT';
+    }
   }
 
   return (
