@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
   label: {
     fontFamily: FONTS.mono,
     fontSize: SIZES.xs,
-    color: COLOURS.dot,
+    color: 'rgba(245,240,232,0.72)',
     letterSpacing: 3,
     marginBottom: SPACE.xs,
   },

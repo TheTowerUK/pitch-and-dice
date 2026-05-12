@@ -2,7 +2,7 @@
 //  ErrorBoundary.js
 //  Catches render errors and logs which
 //  component caused the crash.
-//  Temporary diagnostic tool.
+//  Runtime safety guard.
 // ─────────────────────────────────────────
 
 import React from 'react';

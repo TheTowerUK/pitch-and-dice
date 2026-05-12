@@ -5,42 +5,20 @@
 //  Shows current tier, label, and -10/+10 bar.
 // ─────────────────────────────────────────
 
-import React, { useRef, useEffect } from 'react';
-import { View, Text, Animated, StyleSheet } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
 import { COLOURS, FONTS, SIZES, SPACE } from '../constants/theme';
-import { MOMENTUM_TIERS, TIER_ORDER } from '../engine/momentumEngine';
 
-export const MomentumBar = ({ momentum, tier }) => {
-  const barAnim  = useRef(new Animated.Value(0.5)).current;
-  const fadeAnim = useRef(new Animated.Value(1)).current;
-
-  useEffect(() => {
-    // Convert -10/+10 to 0/1 for bar width
-    const normalised = (momentum + 10) / 20;
-
-    Animated.parallel([
-      Animated.timing(barAnim, {
-        toValue:         normalised,
-        duration:        500,
-        useNativeDriver: false, // width animation needs false
-      }),
-      Animated.sequence([
-        Animated.timing(fadeAnim, { toValue: 0.6, duration: 100, useNativeDriver: true }),
-        Animated.timing(fadeAnim, { toValue: 1,   duration: 200, useNativeDriver: true }),
-      ]),
-    ]).start();
-  }, [momentum]);
-
-  const barWidth = barAnim.interpolate({
-    inputRange:  [0, 1],
-    outputRange: ['0%', '100%'],
-  });
+export const MomentumBar = ({ momentum, tier, pressureTier }) => {
+  const normalised = Math.max(0, Math.min(1, (momentum + 10) / 20));
+  const fillWidth = `${Math.round(normalised * 100)}%`;
+  const pressureGlow = ['tense', 'desperate', 'impossible'].includes(pressureTier?.key);
 
   return (
     <View style={[styles.container, { backgroundColor: tier.bgColour }]}>
 
       {/* Top row — tier label + momentum value */}
-      <Animated.View style={[styles.topRow, { opacity: fadeAnim }]}>
+      <View style={styles.topRow}>
         <Text style={[styles.tierLabel, { color: tier.colour }]}>
           {tier.label}
         </Text>
@@ -52,20 +30,22 @@ export const MomentumBar = ({ momentum, tier }) => {
             {momentum > 0 ? `+${momentum}` : momentum}
           </Text>
         </View>
-      </Animated.View>
+      </View>
 
       {/* Progress bar track */}
-      <View style={styles.track}>
-        {/* Centre marker */}
-        <View style={styles.centreMarker} />
+      <View style={[styles.trackShell, pressureGlow && styles.pressureTrackGlow]}>
+        <View style={styles.track}>
+          {/* Centre marker */}
+          <View style={styles.centreMarker} />
 
-        {/* Filled bar */}
-        <Animated.View
-          style={[
-            styles.fill,
-            { width: barWidth, backgroundColor: tier.colour },
-          ]}
-        />
+          {/* Filled bar */}
+          <View
+            style={[
+              styles.fill,
+              { width: fillWidth, backgroundColor: tier.colour },
+            ]}
+          />
+        </View>
       </View>
 
       {/* Scale labels */}
@@ -123,6 +103,18 @@ const styles = StyleSheet.create({
   },
 
   // Bar
+  trackShell: {
+    borderRadius: 5,
+  },
+  pressureTrackGlow: {
+    borderWidth:    1,
+    borderColor:    'rgba(230,126,34,0.36)',
+    shadowColor:    COLOURS.boundary,
+    shadowOffset:   { width: 0, height: 0 },
+    shadowOpacity:  0.24,
+    shadowRadius:   8,
+    elevation:      3,
+  },
   track: {
     height:          8,
     backgroundColor: 'rgba(0,0,0,0.3)',

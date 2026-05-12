@@ -394,7 +394,7 @@ const Section = ({ section, isOpen, onToggle }) => (
 // ─────────────────────────────────────────
 //  MAIN SCREEN
 // ─────────────────────────────────────────
-export const HelpScreen = ({ onBack }) => {
+export const HelpScreen = ({ onBack, onOpenScreenshotStudio }) => {
   const [openSection, setOpenSection] = useState('what');
 
   const toggle = (key) => {
@@ -427,6 +427,23 @@ export const HelpScreen = ({ onBack }) => {
             New to the game? Start with the first three sections, then check Momentum & Pressure and Special Events before your next match.
           </Text>
         </View>
+
+        {onOpenScreenshotStudio ? (
+          <View style={styles.toolsPanel}>
+            <View style={styles.toolsCopy}>
+              <Text style={styles.toolsLabel}>TOOLS</Text>
+              <Text style={styles.toolsTitle}>Screenshot Studio</Text>
+              <Text style={styles.toolsText}>Open Capture Mode presets for release-safe screenshots.</Text>
+            </View>
+            <TouchableOpacity
+              style={styles.toolsButton}
+              onPress={onOpenScreenshotStudio}
+              activeOpacity={0.85}
+            >
+              <Text style={styles.toolsButtonText}>OPEN</Text>
+            </TouchableOpacity>
+          </View>
+        ) : null}
 
         {/* Sections */}
         {SECTIONS.map(section => (
@@ -520,6 +537,52 @@ const styles = StyleSheet.create({
     color:      COLOURS.gold,
     lineHeight: 20,
     textAlign:  'center',
+  },
+
+  toolsPanel: {
+    flexDirection:     'row',
+    alignItems:        'center',
+    justifyContent:    'space-between',
+    gap:               SPACE.md,
+    backgroundColor:   COLOURS.ink,
+    borderWidth:       1,
+    borderColor:       'rgba(39,174,96,0.28)',
+    borderRadius:      4,
+    padding:           SPACE.lg,
+    marginBottom:      SPACE.lg,
+  },
+  toolsCopy: { flex: 1 },
+  toolsLabel: {
+    fontFamily:    FONTS.monoMed,
+    fontSize:      SIZES.xs,
+    color:         COLOURS.runs1,
+    letterSpacing: 1.8,
+    marginBottom:  2,
+  },
+  toolsTitle: {
+    fontFamily:    FONTS.display,
+    fontSize:      SIZES.xl,
+    color:         COLOURS.cream,
+    letterSpacing: 2.5,
+  },
+  toolsText: {
+    fontFamily: FONTS.mono,
+    fontSize:   SIZES.xs,
+    color:      COLOURS.dot,
+    lineHeight: 16,
+    marginTop:  2,
+  },
+  toolsButton: {
+    backgroundColor: COLOURS.runs1,
+    borderRadius:    4,
+    paddingHorizontal: SPACE.lg,
+    paddingVertical:   SPACE.md,
+  },
+  toolsButtonText: {
+    fontFamily:    FONTS.display,
+    fontSize:      SIZES.md,
+    color:         COLOURS.ink,
+    letterSpacing: 2,
   },
 
   // Section

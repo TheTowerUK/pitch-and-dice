@@ -10,10 +10,7 @@ import {
   logCommentaryPoolValidation,
 } from './audio/audioAssets';
 import * as playback from './audio/audioPlayback';
-import { cancelNewBatterFollowUp, canFireCloseCommentary, forceReleaseSpeechLane, getCommentaryUsageStats as getOrchestratorUsageStats, getSpeechLaneDebugState, maybePlayAnalystFollowUp, notifyLeadReservedForNewBatterFollowUp, playReservedPoolCommentary, queueNewBatterFollowUpAfterWicketLead, releaseSpeechIfOwned, reserveSpeechLane, resetAnalystCommentaryStateForDevScenario, startAmbientCommentaryScheduler, stopAmbientCommentaryScheduler } from './audio/commentaryOrchestrator';
-
-// Re-export dev-only commentary reset (used by Development menu scenario jumps in GameScreen).
-export { resetAnalystCommentaryStateForDevScenario };
+import { cancelNewBatterFollowUp, canFireCloseCommentary, forceReleaseSpeechLane, getCommentaryUsageStats as getOrchestratorUsageStats, getSpeechLaneDebugState, maybePlayAnalystFollowUp, notifyLeadReservedForNewBatterFollowUp, playReservedPoolCommentary, queueNewBatterFollowUpAfterWicketLead, releaseSpeechIfOwned, reserveSpeechLane, resetAnalystCommentaryState, startAmbientCommentaryScheduler, stopAmbientCommentaryScheduler } from './audio/commentaryOrchestrator';
 
 export const MENU_AUDIO_PHASES = new Set(['format_select','mode_select','team_select','player_setup','setup','innings_break','match_summary']);
 export const LIVE_MATCH_AUDIO_PHASES = new Set(['batting','wicket_pending','special_event','bowler_select','field_setup','new_batsman','over_complete','innings_end','match_complete']);
@@ -53,7 +50,7 @@ let crowdAmbientPlaying = false;
 let abActive = 'A';
 let abSwapTimer = null;
 let latestGeneralCommentaryState = null;
-// Temporary channel toggles for isolation/testing.
+// Audio channel toggles.
 // Channel 1/2: match ambient A/B (always on in match mode)
 // Channel 3: lead commentary (on)
 // Channel 4: analyst commentary (off)
@@ -407,6 +404,20 @@ export const stopMatchSounds = () => {
   playback.stopCurrentSpeech();
   crowdAmbientPlaying = false;
   clearABSwapTimer();
+};
+
+export const resetScreenshotStudioAudioState = () => {
+  stopAmbientCommentaryScheduler();
+  cancelNewBatterFollowUp('capture_mode');
+  resetAnalystCommentaryState();
+  forceReleaseSpeechLane();
+  playback.stopCurrentSpeech();
+  crowdAmbientPlaying = false;
+  clearABSwapTimer();
+  specialEventAudioMode = false;
+  latestGeneralCommentaryState = null;
+  matchGamePhaseForAudioResume = null;
+  baseMode = null;
 };
 
 export const playSound = playback.playSfx;

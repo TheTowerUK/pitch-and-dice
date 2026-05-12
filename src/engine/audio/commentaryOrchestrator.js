@@ -25,8 +25,8 @@ const ANALYST_DELAY_MS = 400;
 const ANALYST_MIN_GAP_MS = 2500;
 const CLOSE_MIN_GAP_MS = 4500;
 /**
- * Dev-only: set true locally to stress-test the general scheduler (fast intervals, high chance).
- * Production pacing uses GENERAL_COMMENTARY_* from audioAssets.
+ * Optional fast scheduler overrides for controlled local validation.
+ * Standard pacing uses GENERAL_COMMENTARY_* from audioAssets.
  */
 export const ENABLE_FAST_GENERAL_COMMENTARY_TEST = false;
 const DEV_GENERAL_FAST_TEST_OVERRIDES = (typeof __DEV__ !== 'undefined' && __DEV__ && ENABLE_FAST_GENERAL_COMMENTARY_TEST)
@@ -50,7 +50,7 @@ const NEW_BATTER_FOLLOWUP_MAX_RETRIES = 4;
 let newBatterFollowUpGeneration = 0;
 let pendingNewBatterWicketOwner = null;
 
-/** Bumped on dev-scenario reset; gates pending analyst retries so they no-op after a jump. */
+/** Incremented when analyst state is reset so pending retries can no-op safely. */
 let analystSessionGeneration = 0;
 
 const bumpNewBatterFollowUpGeneration = (reason, logLabel) => {
@@ -65,20 +65,16 @@ export const cancelNewBatterFollowUp = (reason) => {
   bumpNewBatterFollowUpGeneration(reason, 'cancelled');
 };
 
-/**
- * Dev-only: clear analyst commentary module state after a Development menu scenario jump.
- * Does NOT touch base/general ambient state. Pending retries no-op via session-generation mismatch.
- */
-export const resetAnalystCommentaryStateForDevScenario = () => {
+export const resetAnalystCommentaryState = () => {
   if (typeof __DEV__ !== 'undefined' && __DEV__) {
-    console.log('[commentary-debug] dev scenario reset analyst state');
+    console.log('[commentary-debug] analyst state reset');
   }
   analystSessionGeneration += 1;
   lastAnalystAt = 0;
   Object.keys(dedupeMap).forEach((key) => {
     if (key.startsWith('analyst:')) delete dedupeMap[key];
   });
-  cancelNewBatterFollowUp('dev_scenario_reset');
+  cancelNewBatterFollowUp('analyst_state_reset');
   if (reservation && typeof reservation.owner === 'string' && reservation.owner.startsWith('analyst:')) {
     clearReservation();
   }

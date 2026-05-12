@@ -1,3 +1,5 @@
+import 'react-native-gesture-handler';
+
 // ═══════════════════════════════════════════════════════
 //  App.js — Phase 4
 //  Routes: HomeScreen → GameScreen
@@ -5,6 +7,7 @@
 // ═══════════════════════════════════════════════════════
 
 import { enableScreens } from 'react-native-screens';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 enableScreens();
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -18,6 +21,7 @@ import { GameScreen }         from './src/screens/GameScreen';
 import { MatchHistoryScreen } from './src/screens/MatchHistoryScreen';
 import { COLOURS }            from './src/constants/theme';
 import { loadCurrentMatch, clearCurrentMatch, isResumableInProgressMatch } from './src/engine/storageEngine';
+import { ENABLE_SCREENSHOT_STUDIO } from './src/tools/screenshotStudio/screenshotPresets';
 import {
   initSounds, unloadSounds, stopMusic,
   recoverAudioEngineAfterInterruption, hydrateAudioMutePreference,
@@ -35,6 +39,7 @@ export default function App() {
   const [resumableMatch, setResumableMatch] = useState(null);
   const [checked,        setChecked]        = useState(false);
   const [soundsReady,    setSoundsReady]     = useState(false);
+  const [screenshotPresetId, setScreenshotPresetId] = useState(null);
   const appStateRef      = useRef(AppState.currentState);
   const screenRef        = useRef('home');
   const pendingStopTimerRef = useRef(null);
@@ -152,61 +157,78 @@ export default function App() {
 
   // Always wrap in SafeAreaProvider so context is available everywhere
   return (
-    <SafeAreaProvider>
-      <StatusBar style="light" />
+    <GestureHandlerRootView style={styles.root}>
+      <SafeAreaProvider>
+        <StatusBar style="light" />
 
-      {/* Loading state — fonts, storage, or sounds not yet complete */}
-      {(!fontsLoaded || !checked || !soundsReady) && (
-        <View style={styles.loading}>
-          <Text style={styles.loadingText}>PITCH & DICE</Text>
-        </View>
-      )}
+        {/* Loading state — fonts, storage, or sounds not yet complete */}
+        {(!fontsLoaded || !checked || !soundsReady) && (
+          <View style={styles.loading}>
+            <Text style={styles.loadingText}>PITCH & DICE</Text>
+          </View>
+        )}
 
-      {/* Home screen */}
-      {fontsLoaded && checked && soundsReady && screen === 'home' && (
-        <HomeScreen
-          hasResumableMatch={!!resumableMatch}
-          resumableMatch={resumableMatch}
-          onNewMatch={() => {
-            setResumableMatch(null); // clear so GameScreen starts fresh
-            setScreen('game');
-          }}
-          onContinue={() => setScreen('game')}
-          onHistory={() => setScreen('history')}
-        />
-      )}
+        {/* Home screen */}
+        {fontsLoaded && checked && soundsReady && screen === 'home' && (
+          <HomeScreen
+            hasResumableMatch={!!resumableMatch}
+            resumableMatch={resumableMatch}
+            onNewMatch={() => {
+              setResumableMatch(null); // clear so GameScreen starts fresh
+              setScreenshotPresetId(null);
+              setScreen('game');
+            }}
+            onContinue={() => {
+              setScreenshotPresetId(null);
+              setScreen('game');
+            }}
+            onHistory={() => setScreen('history')}
+            onStartScreenshotPreset={(presetId) => {
+              if (!ENABLE_SCREENSHOT_STUDIO) return;
+              setResumableMatch(null);
+              setScreenshotPresetId(presetId);
+              setScreen('game');
+            }}
+          />
+        )}
 
-      {/* Game screen */}
-      {fontsLoaded && checked && soundsReady && screen === 'game' && (
-        <GameScreen
-          resumableMatch={resumableMatch}
-          onGoHome={() => setScreen('home')}
-          onQuit={async () => {
-            await stopMusic();
-            clearCurrentMatch();
-            setResumableMatch(null);
-            setScreen('home');
-          }}
-          onSaveAndHome={async () => {
-            await stopMusic();
-            loadCurrentMatch().then(saved => {
-              if (saved && saved.balls > 0) setResumableMatch(saved);
-            });
-            setScreen('home');
-          }}
-        />
-      )}
+        {/* Game screen */}
+        {fontsLoaded && checked && soundsReady && screen === 'game' && (
+          <GameScreen
+            resumableMatch={resumableMatch}
+            screenshotPresetId={screenshotPresetId}
+            onScreenshotPresetApplied={() => setScreenshotPresetId(null)}
+            onGoHome={() => setScreen('home')}
+            onQuit={async () => {
+              await stopMusic();
+              clearCurrentMatch();
+              setResumableMatch(null);
+              setScreen('home');
+            }}
+            onSaveAndHome={async () => {
+              await stopMusic();
+              loadCurrentMatch().then(saved => {
+                if (saved && saved.balls > 0) setResumableMatch(saved);
+              });
+              setScreen('home');
+            }}
+          />
+        )}
 
-      {/* Match history */}
-      {fontsLoaded && checked && screen === 'history' && (
-        <MatchHistoryScreen onBack={() => setScreen('home')} />
-      )}
+        {/* Match history */}
+        {fontsLoaded && checked && screen === 'history' && (
+          <MatchHistoryScreen onBack={() => setScreen('home')} />
+        )}
 
-    </SafeAreaProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
 
 const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+  },
   loading: {
     flex:            1,
     backgroundColor: COLOURS.ink,

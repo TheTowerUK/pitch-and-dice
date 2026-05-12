@@ -62,6 +62,13 @@ import {
   swapStrikerEnds,
 } from '../engine/teamEngine';
 import { FORMATS } from '../constants/theme';
+import {
+  ENABLE_SCREENSHOT_STUDIO,
+  getScreenshotPreset,
+} from '../tools/screenshotStudio/screenshotPresets';
+import {
+  applyScreenshotPreset as buildScreenshotPresetState,
+} from '../tools/screenshotStudio/applyScreenshotPreset';
 
 const logPhase = (reason, snapshot) => {
   if (typeof __DEV__ === 'undefined' || !__DEV__) return;
@@ -183,6 +190,8 @@ const makeInningsState = () => ({
   runs:        0,
   wickets:     0,
   balls:       0,
+  /** Cumulative runs/wickets after each legal delivery — for chase graph / history. */
+  cumulativeRunSeries: [],
   boundaries:  0,
   sixes:       0,
   dots:        0,
@@ -781,6 +790,17 @@ export const useGameState = () => {
           s.recentBalls.length > 0
             ? [...s.recentBalls.slice(0, -1), dotBall]
             : s.recentBalls;
+        let cumulativeRunSeries = s.cumulativeRunSeries;
+        if (Array.isArray(cumulativeRunSeries) && cumulativeRunSeries.length > 0) {
+          const next = [...cumulativeRunSeries];
+          const last = next[next.length - 1];
+          next[next.length - 1] = {
+            ...last,
+            runs: s.runs,
+            wickets: s.wickets,
+          };
+          cumulativeRunSeries = next;
+        }
         return {
           ...s,
           gamePhase:   'batting',
@@ -788,6 +808,7 @@ export const useGameState = () => {
           drsReviews:  reviewsLeft,
           overBalls,
           recentBalls,
+          cumulativeRunSeries,
           // Restore lastOutcome to dot (wicket overturned)
           lastOutcome: {
             ...s.lastOutcome,
@@ -935,6 +956,9 @@ export const useGameState = () => {
         boundaries:  s.boundaries,
         sixes:       s.sixes,
         dots:        s.dots,
+        cumulativeRunSeries: Array.isArray(s.cumulativeRunSeries)
+          ? s.cumulativeRunSeries.map((p) => ({ ...p }))
+          : [],
         // Full snapshots for detailed history view
         battingSquad: s.battingSquad,
         bowlingSquad: s.bowlingSquad,
@@ -1035,6 +1059,19 @@ export const useGameState = () => {
     }));
   }, []);
 
+  const applyScreenshotPreset = useCallback((presetId) => {
+    if (!ENABLE_SCREENSHOT_STUDIO) return false;
+    const preset = getScreenshotPreset(presetId);
+    if (!preset) return false;
+
+    clearCurrentMatch();
+    setState(buildScreenshotPresetState(
+      makeInitialState(preset.format || 'T20', 'batting', { skipFormatSelect: true }),
+      presetId,
+    ));
+    return true;
+  }, []);
+
   const startNextOver = useCallback(() => {
     setState(s => {
       if (s.gamePhase !== 'over_complete' || !s.pendingNextOver) return s;
@@ -1054,61 +1091,6 @@ export const useGameState = () => {
         bowlingSquad: next.updatedBowlingSquad ?? s.bowlingSquad,
         commentary: nextCommentary,
         pendingNextOver: null,
-      };
-    });
-  }, []);
-
-  // ── DEV: JUMP TO SCENARIO ──────────────
-  const jumpToScenario = useCallback((scenario) => {
-    if (!__DEV__) return;
-    setState(s => {
-      // Only works mid-match with squads set up
-      if (!s.battingSquad || !s.bowlingSquad) return s;
-      const formatKey = scenario.format ?? s.format;
-      const maxBallsForFormat = FORMATS[formatKey].overs * 6;
-
-      // Force innings 2 if scenario requires chase
-      const needsChase = scenario.target != null;
-      const balls = Math.max(0, maxBallsForFormat - scenario.ballsRemaining);
-
-      return {
-        ...s,
-        format:     formatKey,
-        innings:    needsChase ? 2 : s.innings,
-        target:     scenario.target ?? s.target,
-        balls,
-        runs:       scenario.runs,
-        wickets:    scenario.wickets,
-        gamePhase:  'batting',
-        deliveryPhase: 'idle',
-        // Reset per-ball tracking so everything recalculates cleanly
-        overBalls:  [],
-        lastOutcome: null,
-        pendingInningsEnd: false,
-        pendingMilestone:  null,
-        lastPressureIndex: null,
-        recentBalls: [],
-        momentum: 0,
-        // Preserve commentary so the log reads as intended,
-        // but mark the jump
-        commentary: [
-          { ball: 'DEV', text: `⚙ Jumped to: ${scenario.label}`, style: 'momentum' },
-          ...s.commentary,
-        ],
-        // Keep innings1Stats if already set
-        innings1Stats: s.innings1Stats ?? (needsChase ? {
-          runs:     (scenario.target || 1) - 1,
-          wickets:  6,
-          overs:    `${Math.floor(maxBallsForFormat / 6)}.0`,
-          boundaries: 8,
-          sixes:    2,
-          dots:     30,
-          teamName: s.bowlingSquad?.teamName,
-          teamFlag: s.bowlingSquad?.flag,
-          battingSquad: s.bowlingSquad,
-          bowlingSquad: s.battingSquad,
-          commentary: [],
-        } : null),
       };
     });
   }, []);
@@ -1133,8 +1115,8 @@ export const useGameState = () => {
     startInnings2, newMatch, resumeMatch,
     commitInningsEnd,
     queueMatchResultCommentary,
+    applyScreenshotPreset,
     startNextOver,
-    jumpToScenario,
     flushCurrentMatch,
   };
 };
@@ -1486,6 +1468,11 @@ function resolveAndApplyBall(s, maxBalls) {
     ? decrementSpecialEventCooldowns(s.specialEventCooldownsByType)
     : (s.specialEventCooldownsByType || {});
 
+  const prevSeries = Array.isArray(s.cumulativeRunSeries) ? s.cumulativeRunSeries : [];
+  const cumulativeRunSeries = isLegalDelivery
+    ? [...prevSeries, { ball: newBalls, runs: newRuns, wickets: logicalWickets }]
+    : prevSeries;
+
   // ── Single unified return ─────────────
   return {
     ...s,
@@ -1537,6 +1524,7 @@ function resolveAndApplyBall(s, maxBalls) {
     lastStrikeChangeReason: inningsBattingState.lastStrikeChangeReason,
     currentBatter: inningsBattingState.batters[inningsBattingState.strikerIndex] || null,
     strikeRotatedForRuns,
+    cumulativeRunSeries,
   };
 }
 

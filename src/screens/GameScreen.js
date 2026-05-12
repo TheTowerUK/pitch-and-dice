@@ -39,9 +39,12 @@ import { InningsModal }         from '../components/InningsModal';
 import { PauseOverlay }         from '../components/PauseOverlay';
 import { MilestoneModal }       from '../components/MilestoneModal';
 import { DiceRollAnimation }    from '../components/DiceRollAnimation';
-import { DevPanel }             from '../components/DevPanel';
 import { buildMatchSummary, isResumableInProgressMatch } from '../engine/storageEngine';
-import { playSoundForOutcome, playSfxForOutcome, playSoundForWicket, playSoundForSpecialEvent, checkCloseGameCommentary, stopMusic, isAudioEnabled, playSoundForMatchResult, playSoundForFirstInningsEnd, playSoundForChaseStart, stopMatchSounds, playSoundForMilestone, enterSpecialEventAudioMode, exitSpecialEventAudioMode, setMatchGamePhaseForAudioResume, syncBaseAudioForState, LIVE_MATCH_AUDIO_PHASES, handoffMenuAfterTieResult, updateGeneralCommentaryState, getCurrentSpeechKey, isCommentaryClipPlaying, isSpeechLaneBusyForUi, resetAnalystCommentaryStateForDevScenario } from '../engine/soundEngine';
+import { playSoundForOutcome, playSfxForOutcome, playSoundForWicket, playSoundForSpecialEvent, checkCloseGameCommentary, stopMusic, isAudioEnabled, playSoundForMatchResult, playSoundForFirstInningsEnd, playSoundForChaseStart, stopMatchSounds, playSoundForMilestone, enterSpecialEventAudioMode, exitSpecialEventAudioMode, setMatchGamePhaseForAudioResume, syncBaseAudioForState, LIVE_MATCH_AUDIO_PHASES, handoffMenuAfterTieResult, updateGeneralCommentaryState, getCurrentSpeechKey, isCommentaryClipPlaying, isSpeechLaneBusyForUi, resetScreenshotStudioAudioState } from '../engine/soundEngine';
+import {
+  ENABLE_SCREENSHOT_STUDIO,
+  getScreenshotPreset,
+} from '../tools/screenshotStudio/screenshotPresets';
 
 const pickAITeam = (playerTeamId) => {
   const others = Object.values(WORLD_TEAMS).filter(t => t.id !== playerTeamId);
@@ -127,7 +130,14 @@ function getWicketAudioNewBatterAnalystContext(state, maxBalls) {
   };
 }
 
-export const GameScreen = ({ resumableMatch, onGoHome, onQuit, onSaveAndHome }) => {
+export const GameScreen = ({
+  resumableMatch,
+  screenshotPresetId,
+  onScreenshotPresetApplied,
+  onGoHome,
+  onQuit,
+  onSaveAndHome,
+}) => {
   const MIN_PLAYING_LOCK_MS = 2200;
   const MAX_PLAYING_LOCK_MS = 6500;
   const SPEECH_CLEAR_POLL_MS = 150;
@@ -147,8 +157,8 @@ export const GameScreen = ({ resumableMatch, onGoHome, onQuit, onSaveAndHome }) 
     startInnings2, newMatch, resumeMatch,
     commitInningsEnd,
     queueMatchResultCommentary,
+    applyScreenshotPreset,
     startNextOver,
-    jumpToScenario,
     flushCurrentMatch,
   } = useGameState();
 
@@ -165,7 +175,6 @@ export const GameScreen = ({ resumableMatch, onGoHome, onQuit, onSaveAndHome }) 
   const [showScorecard,  setShowScorecard] = useState(false);
   const [showFieldEdit,  setShowFieldEdit] = useState(false);
   const [showDiceAnim,   setShowDiceAnim]  = useState(false);
-  const [showDevPanel,   setShowDevPanel]  = useState(false);
   const [showPauseHelp,  setShowPauseHelp] = useState(false);
   const [resumeOffered,  setResumeOffered] = useState(false);
   const wasSpecialEventMode = useRef(false);
@@ -411,6 +420,37 @@ export const GameScreen = ({ resumableMatch, onGoHome, onQuit, onSaveAndHome }) 
     }
   }, [resumableMatch, resumeOffered, resumeMatch]);
 
+  useEffect(() => {
+    if (!screenshotPresetId) return;
+    if (!ENABLE_SCREENSHOT_STUDIO) {
+      onScreenshotPresetApplied?.();
+      return;
+    }
+
+    const preset = getScreenshotPreset(screenshotPresetId);
+    resetScreenshotStudioAudioState();
+    clearDeliveryLockTimer();
+    setShowDiceAnim(false);
+    setShowHistory(false);
+    setShowPause(false);
+    setShowPauseHelp(false);
+    setShowFieldEdit(false);
+    setShowScorecard(false);
+    transitionToReady('capture_mode');
+
+    const applied = applyScreenshotPreset(screenshotPresetId);
+    if (applied && preset?.view === 'scorecard') {
+      setShowScorecard(true);
+    }
+    onScreenshotPresetApplied?.();
+  }, [
+    screenshotPresetId,
+    applyScreenshotPreset,
+    clearDeliveryLockTimer,
+    transitionToReady,
+    onScreenshotPresetApplied,
+  ]);
+
   // Match-over: give result commentary time to play, then stop match-only SFX.
   useEffect(() => {
     if (state.gamePhase === 'innings_end' && state.innings === 2) {
@@ -518,6 +558,12 @@ export const GameScreen = ({ resumableMatch, onGoHome, onQuit, onSaveAndHome }) 
         battingSquad={state.battingSquad} bowlingSquad={state.bowlingSquad}
         runs={state.runs} wickets={state.wickets} overDisplay={overDisplay}
         onBack={() => setShowScorecard(false)}
+        formatKey={state.format}
+        innings1Series={state.innings1Stats?.cumulativeRunSeries}
+        innings2Series={state.innings === 2 ? state.cumulativeRunSeries : []}
+        chaseTarget={state.innings === 2 ? state.target : null}
+        chaseLabel1={state.innings1Stats?.teamName}
+        chaseLabel2={state.battingSquad?.teamName}
       />
     );
   }
@@ -571,9 +617,9 @@ export const GameScreen = ({ resumableMatch, onGoHome, onQuit, onSaveAndHome }) 
   const canRoll             = state.gamePhase === 'batting' && !state.pendingOutcome && state.deliveryPhase !== 'rolling' && !state.pendingInningsEnd;
   const canTriggerRoll = canRoll && deliveryActionPhase === 'ready';
   const rollButtonStatusLabel = deliveryActionPhase === 'rolling'
-    ? 'ROLLING...'
+    ? 'DELIVERY IN PLAY'
     : deliveryActionPhase === 'playing'
-      ? 'PLAYING...'
+      ? 'DELIVERY IN PLAY'
       : 'ROLL';
   const showShotSelector    = isManual || isBatting;
   const showBowlingSelector = isManual || isBowling;
@@ -583,40 +629,27 @@ export const GameScreen = ({ resumableMatch, onGoHome, onQuit, onSaveAndHome }) 
       <StatusBar barStyle="light-content" backgroundColor={COLOURS.ink} />
 
       <View style={styles.top}>
-        {(() => {
-          const scoreboardEl = (
-            <Scoreboard
-              runs={state.runs}
-              wickets={state.wickets}
-              overDisplay={overDisplay}
-              ballsRemaining={ballsRemaining}
-              formatLabel={getFormatScoreboardLabel(state.format)}
-              innings={state.innings}
-              target={state.target}
-              rrr={rrr}
-              pressureTier={pressureTier}
-              bowler={state.bowler}
-              battingSquad={state.battingSquad}
-              bowlingSquad={state.bowlingSquad}
-              batters={state.batters}
-              battingOrder={state.battingOrder}
-              players={state.players}
-              strikerIndex={state.strikerIndex}
-              nonStrikerIndex={state.nonStrikerIndex}
-              onHistoryPress={() => setShowHistory(true)} onPausePress={() => setShowPause(true)}
-            />
-          );
-          if (!__DEV__) return scoreboardEl;
-          return (
-            <TouchableOpacity
-              onLongPress={() => setShowDevPanel(true)}
-              delayLongPress={1000}
-              activeOpacity={1}
-            >
-              {scoreboardEl}
-            </TouchableOpacity>
-          );
-        })()}
+        <Scoreboard
+          runs={state.runs}
+          wickets={state.wickets}
+          overDisplay={overDisplay}
+          ballsRemaining={ballsRemaining}
+          formatLabel={getFormatScoreboardLabel(state.format)}
+          innings={state.innings}
+          target={state.target}
+          rrr={rrr}
+          pressureTier={pressureTier}
+          bowler={state.bowler}
+          battingSquad={state.battingSquad}
+          bowlingSquad={state.bowlingSquad}
+          batters={state.batters}
+          battingOrder={state.battingOrder}
+          players={state.players}
+          strikerIndex={state.strikerIndex}
+          nonStrikerIndex={state.nonStrikerIndex}
+          captureMode={!!state.captureMode}
+          onHistoryPress={() => setShowHistory(true)} onPausePress={() => setShowPause(true)}
+        />
         <OverBalls overBalls={state.overBalls} />
         {state.gamePhase === 'special_event' && state.pendingEvent?.key === 'no_ball' && (
           <View style={styles.noBallBadge}>
@@ -631,6 +664,8 @@ export const GameScreen = ({ resumableMatch, onGoHome, onQuit, onSaveAndHome }) 
         <MomentumBar
           momentum={state.momentum}
           tier={momentumTier}
+          pressureTier={pressureTier}
+          captureMode={!!state.captureMode}
         />
         <PlayerCard
           batsman={state.batsman} bowler={state.bowler}
@@ -719,6 +754,7 @@ export const GameScreen = ({ resumableMatch, onGoHome, onQuit, onSaveAndHome }) 
           <ShotSelector
             selectedShot={state.selectedShot} selectedAggression={state.selectedAggression}
             onSelectShot={selectShot} onSelectAggression={selectAggression}
+            captureMode={!!state.captureMode}
           />
         )}
 
@@ -741,6 +777,7 @@ export const GameScreen = ({ resumableMatch, onGoHome, onQuit, onSaveAndHome }) 
           disabled={!canTriggerRoll}
           statusLabel={rollButtonStatusLabel}
           gameMode={gameMode}
+          captureMode={!!state.captureMode}
         />
 
         <AIDecisionBanner aiDecision={state.aiDecision} gameMode={gameMode} />
@@ -769,7 +806,7 @@ export const GameScreen = ({ resumableMatch, onGoHome, onQuit, onSaveAndHome }) 
           resolveSpecialEventContinue();
         }}
       />
-      <WicketModal visible={state.gamePhase === 'wicket_pending'} wicket={state.lastWicket} drsReviews={state.drsReviews ?? 1} onConfirm={confirmWicket} />
+      <WicketModal visible={state.gamePhase === 'wicket_pending'} wicket={state.lastWicket} drsReviews={state.drsReviews ?? 1} onConfirm={confirmWicket} captureMode={!!state.captureMode} />
       <NewBatsmanModal visible={state.gamePhase === 'new_batsman'} wicketInfo={state.lastWicket} onConfirm={confirmNewBatsman} />
       <BowlerSelectModal visible={state.gamePhase === 'bowler_select'} bowlingSquad={state.bowlingSquad} format={state.format} currentOver={currentOvers} onConfirm={confirmBowler} />
       <FieldSetupModal
@@ -777,7 +814,7 @@ export const GameScreen = ({ resumableMatch, onGoHome, onQuit, onSaveAndHome }) 
         currentOver={currentOvers}
         onConfirm={(field) => { confirmField(field); setShowFieldEdit(false); }}
       />
-      <MilestoneModal visible={!!state.pendingMilestone} milestone={state.pendingMilestone?.runs} batsmanName={state.pendingMilestone?.batsmanName} onConfirm={confirmMilestone} />
+      <MilestoneModal visible={!!state.pendingMilestone} milestone={state.pendingMilestone?.runs} batsmanName={state.pendingMilestone?.batsmanName} onConfirm={confirmMilestone} captureMode={!!state.captureMode} />
       <PauseOverlay
         visible={showPause} runs={state.runs} wickets={state.wickets}
         overDisplay={overDisplay} formatLabel={getFormatScoreboardLabel(state.format)} innings={state.innings}
@@ -808,17 +845,8 @@ export const GameScreen = ({ resumableMatch, onGoHome, onQuit, onSaveAndHome }) 
         }}
         onNewMatch={() => newMatch(state.format)}
         onViewScorecard={() => setShowScorecard(true)}
+        captureMode={!!state.captureMode}
       />
-      {__DEV__ && (
-        <DevPanel
-          visible={showDevPanel}
-          onClose={() => setShowDevPanel(false)}
-          onJump={(scenario) => {
-            resetAnalystCommentaryStateForDevScenario();
-            jumpToScenario(scenario);
-          }}
-        />
-      )}
     </SafeAreaView>
   );
 };

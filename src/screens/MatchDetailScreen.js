@@ -9,8 +9,9 @@ import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { COLOURS, FONTS, SIZES, SPACE } from '../constants/theme';
+import { COLOURS, FONTS, SIZES, SPACE, FORMATS } from '../constants/theme';
 import { ScorecardScreen } from './ScorecardScreen';
+import { ChaseGraph } from '../components/ChaseGraph';
 
 const Tab = ({ label, active, onPress }) => (
   <TouchableOpacity
@@ -36,6 +37,37 @@ const CommentaryEntry = ({ entry }) => {
       <Text style={[styles.cmtText, { color: colour }]}>{entry.text}</Text>
     </View>
   );
+};
+
+const getResultMood = (match) => {
+  const moodKey = match?.resultMood
+    || (match?.winner === 'tie' ? 'tie' : match?.winner === 'chasing' ? 'win' : match?.winner === 'defending' ? 'loss' : 'neutral');
+  if (moodKey === 'win') {
+    return {
+      accent: COLOURS.runs1,
+      bg: 'rgba(39,174,96,0.10)',
+      border: 'rgba(39,174,96,0.28)',
+    };
+  }
+  if (moodKey === 'loss') {
+    return {
+      accent: '#b85b4f',
+      bg: 'rgba(184,91,79,0.08)',
+      border: 'rgba(184,91,79,0.22)',
+    };
+  }
+  if (moodKey === 'tie') {
+    return {
+      accent: COLOURS.gold,
+      bg: 'rgba(212,160,23,0.10)',
+      border: 'rgba(212,160,23,0.28)',
+    };
+  }
+  return {
+    accent: COLOURS.gold,
+    bg: 'transparent',
+    border: 'rgba(255,255,255,0.08)',
+  };
 };
 
 // Renders a full scorecard view for an innings stored in history
@@ -72,6 +104,8 @@ export const MatchDetailScreen = ({ match, onBack }) => {
   const isV2 = match?.schemaVersion >= 2;
   const hasInnings1 = isV2 && match.innings1;
   const hasInnings2 = isV2 && match.innings2;
+  const maxBalls = (FORMATS[match?.format]?.overs ?? 20) * 6;
+  const resultMood = getResultMood(match);
 
   // Build combined commentary — newest balls at top, label with innings
   const combinedCommentary = [];
@@ -93,9 +127,9 @@ export const MatchDetailScreen = ({ match, onBack }) => {
         <Text style={styles.title}>MATCH DETAIL</Text>
       </View>
 
-      <View style={styles.summary}>
+      <View style={[styles.summary, { backgroundColor: resultMood.bg, borderBottomColor: resultMood.border }]}>
         <Text style={styles.format}>{match.format} · {match.date}</Text>
-        <Text style={styles.result}>{match.result}</Text>
+        <Text style={[styles.result, { color: resultMood.accent }]}>{match.result}</Text>
       </View>
 
       {!isV2 && (
@@ -123,6 +157,19 @@ export const MatchDetailScreen = ({ match, onBack }) => {
               contentContainerStyle={styles.scrollContent}
               showsVerticalScrollIndicator={false}
             >
+              {hasInnings1 && hasInnings2 && (
+                <View style={styles.chaseBlock}>
+                  <ChaseGraph
+                    series1={match.innings1.cumulativeRunSeries || []}
+                    series2={match.innings2.cumulativeRunSeries || []}
+                    target={match.target}
+                    maxBalls={maxBalls}
+                    label1={match.innings1.teamName || '1st innings'}
+                    label2={match.innings2.teamName || '2nd innings'}
+                    emptyHint="Run timeline was not stored for this match (older save)."
+                  />
+                </View>
+              )}
               {hasInnings1 && (
                 <HistoryScorecard innings={match.innings1} label="1st INNINGS" />
               )}
@@ -165,9 +212,13 @@ const styles = StyleSheet.create({
   backBtn: { marginRight: SPACE.md },
   backText: { fontFamily: FONTS.display, fontSize: SIZES.md, color: COLOURS.gold, letterSpacing: 2 },
   title: { fontFamily: FONTS.display, fontSize: SIZES.lg, color: COLOURS.cream, letterSpacing: 4 },
-  summary: { paddingHorizontal: SPACE.lg, paddingVertical: SPACE.md },
+  summary: {
+    paddingHorizontal: SPACE.lg,
+    paddingVertical: SPACE.md,
+    borderBottomWidth: 1,
+  },
   format: { fontFamily: FONTS.mono, fontSize: SIZES.xs, color: COLOURS.dot, letterSpacing: 2, marginBottom: SPACE.xs },
-  result: { fontFamily: FONTS.display, fontSize: SIZES.lg, color: COLOURS.gold, letterSpacing: 2 },
+  result: { fontFamily: FONTS.display, fontSize: SIZES.xl, color: COLOURS.gold, letterSpacing: 2.4 },
 
   tabs: {
     flexDirection: 'row',
@@ -187,6 +238,7 @@ const styles = StyleSheet.create({
   scroll: { flex: 1 },
   scrollContent: { padding: SPACE.lg, paddingBottom: SPACE.xxl },
 
+  chaseBlock: { marginBottom: SPACE.md },
   inningsBlock: { marginBottom: SPACE.xl },
   inningsLabel: {
     fontFamily: FONTS.display,

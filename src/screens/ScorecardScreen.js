@@ -8,7 +8,8 @@ import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { COLOURS, FONTS, SIZES, SPACE } from '../constants/theme';
+import { COLOURS, FONTS, SIZES, SPACE, FORMATS } from '../constants/theme';
+import { ChaseGraph } from '../components/ChaseGraph';
 import {
   getScorecardRows,
   getYetToBat,
@@ -30,7 +31,7 @@ const BattingRow = ({ entry }) => {
         <Text style={styles.batName} numberOfLines={1}>
           {entry.name.split(' ').pop() || entry.name}{suffix}
         </Text>
-        <Text style={styles.batOut} numberOfLines={1}>{outText}</Text>
+        <Text style={[styles.batOut, entry.dismissal && styles.batDismissal]} numberOfLines={1}>{outText}</Text>
       </View>
       <Text style={styles.batNum}>{entry.runs}</Text>
       <Text style={styles.batNum}>{entry.balls}</Text>
@@ -44,7 +45,15 @@ const BattingRow = ({ entry }) => {
 export const ScorecardScreen = ({
   battingSquad, bowlingSquad, runs, wickets, overDisplay, onBack,
   embedded = false,
+  formatKey = 'T20',
+  innings1Series = null,
+  innings2Series = null,
+  chaseTarget = null,
+  chaseLabel1 = null,
+  chaseLabel2 = null,
 }) => {
+  const maxBalls = (FORMATS[formatKey]?.overs ?? 20) * 6;
+  const showChaseGraph = !embedded;
   const batted = battingSquad ? getScorecardRows(battingSquad) : [];
   const ytb    = battingSquad ? getYetToBat(battingSquad)      : [];
 
@@ -80,11 +89,26 @@ export const ScorecardScreen = ({
           {battingSquad?.teamName || 'Batting'}
           {battingSquad?.flag ? ` ${battingSquad.flag}` : ''}
         </Text>
-        <Text style={styles.summaryScore}>
-          {runs}<Text style={styles.summaryWkts}>/{wickets}</Text>
-          <Text style={styles.summaryOv}>  ·  OV {overDisplay}</Text>
-        </Text>
+        <View style={styles.summaryScoreRow}>
+          <Text style={styles.summaryScore}>
+            {runs}<Text style={styles.summaryWkts}>/{wickets}</Text>
+          </Text>
+          <Text style={styles.summaryOv} numberOfLines={1}>OV {overDisplay}</Text>
+        </View>
       </View>
+
+      {showChaseGraph && (
+        <View style={styles.chaseGraphPad}>
+          <ChaseGraph
+            series1={innings1Series || []}
+            series2={innings2Series || []}
+            target={chaseTarget}
+            maxBalls={maxBalls}
+            label1={chaseLabel1 || '1st innings'}
+            label2={chaseLabel2 || '2nd innings'}
+          />
+        </View>
+      )}
 
       {!battingSquad && (
         <Text style={styles.empty}>No squad data for this match.</Text>
@@ -230,10 +254,12 @@ const styles = StyleSheet.create({
   backText:     { fontFamily: FONTS.display, fontSize: SIZES.md, color: COLOURS.gold, letterSpacing: 2 },
   title:        { fontFamily: FONTS.display, fontSize: SIZES.lg, color: COLOURS.cream, letterSpacing: 4 },
   summary:      { paddingHorizontal: SPACE.lg, paddingVertical: SPACE.md },
+  chaseGraphPad: { paddingHorizontal: SPACE.lg },
   teamName:     { fontFamily: FONTS.mono, fontSize: SIZES.xs, color: COLOURS.dot, letterSpacing: 2, marginBottom: SPACE.xs },
-  summaryScore: { fontFamily: FONTS.display, fontSize: 36, color: COLOURS.cream, letterSpacing: 1 },
-  summaryWkts:  { color: COLOURS.red, fontSize: 28 },
-  summaryOv:    { fontFamily: FONTS.mono, fontSize: SIZES.md, color: COLOURS.dot },
+  summaryScoreRow: { flexDirection: 'row', alignItems: 'flex-end', flexWrap: 'wrap' },
+  summaryScore: { fontFamily: FONTS.display, fontSize: 42, color: COLOURS.cream, letterSpacing: 1, lineHeight: 46 },
+  summaryWkts:  { color: COLOURS.red, fontSize: 32 },
+  summaryOv:    { fontFamily: FONTS.mono, fontSize: SIZES.md * 1.05, color: COLOURS.dot, marginLeft: 14, marginBottom: 7 },
   empty:        { fontFamily: FONTS.mono, fontSize: SIZES.sm, color: COLOURS.dot, paddingHorizontal: SPACE.lg },
   scroll:       { flex: 1 },
   embedWrap:   { paddingBottom: SPACE.md },
@@ -248,10 +274,11 @@ const styles = StyleSheet.create({
   batNameCol:   { flex: 1, marginRight: SPACE.sm },
   batName:      { fontFamily: FONTS.display, fontSize: SIZES.md, color: COLOURS.cream, letterSpacing: 1 },
   batOut:       { fontFamily: FONTS.mono, fontSize: 10, color: COLOURS.boundary, marginTop: 2 },
+  batDismissal: { fontFamily: FONTS.monoMed, color: '#ff9638' },
   batNum:       { fontFamily: FONTS.mono, fontSize: SIZES.sm, color: COLOURS.dot, width: 32, textAlign: 'center' },
   batNumSr:     { fontFamily: FONTS.mono, fontSize: SIZES.sm, color: COLOURS.dot, width: 44, textAlign: 'right' },
-  ytbLabel:     { fontFamily: FONTS.mono, fontSize: 10, color: COLOURS.dot, marginTop: SPACE.lg, letterSpacing: 2 },
-  ytbNames:     { fontFamily: FONTS.mono, fontSize: SIZES.xs, color: COLOURS.dot, opacity: 0.85, marginTop: SPACE.xs, lineHeight: 18 },
+  ytbLabel:     { fontFamily: FONTS.mono, fontSize: 9.5, color: COLOURS.dot, opacity: 0.72, marginTop: SPACE.md, letterSpacing: 2 },
+  ytbNames:     { fontFamily: FONTS.mono, fontSize: SIZES.xs, color: COLOURS.dot, opacity: 0.68, marginTop: 2, lineHeight: 16 },
   bowlTeam:     { fontFamily: FONTS.mono, fontSize: SIZES.xs, color: COLOURS.dot, marginBottom: SPACE.sm },
   bowlHead:     { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: 'rgba(212,160,23,0.25)', paddingBottom: SPACE.xs, marginBottom: SPACE.xs },
   bth:          { fontFamily: FONTS.mono, fontSize: 10, color: COLOURS.dot, width: 40, textAlign: 'center', letterSpacing: 1 },

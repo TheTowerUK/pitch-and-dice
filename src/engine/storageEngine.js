@@ -127,10 +127,19 @@ export const saveAudioMuted = async (muted) => {
 export const buildMatchSummary = (state, overDisplay, runRate) => {
   // Determine winner on a 2-innings match
   let winner = null;
+  let resultMood = 'neutral';
   if (state.innings === 2 && state.target) {
-    if (state.runs >= state.target)      winner = 'chasing';
-    else if (state.wickets >= 10)        winner = 'defending';
-    else                                  winner = 'defending'; // overs exhausted
+    const tied = state.runs === state.target - 1;
+    if (state.runs >= state.target) {
+      winner = 'chasing';
+      resultMood = 'win';
+    } else if (tied) {
+      winner = 'tie';
+      resultMood = 'tie';
+    } else {
+      winner = 'defending';
+      resultMood = 'loss';
+    }
   }
 
   return {
@@ -151,6 +160,7 @@ export const buildMatchSummary = (state, overDisplay, runRate) => {
     bowler:      state.bowler?.name  || 'Unknown',
     pitchType:   state.pitchType     || 'flat',
     winner,
+    resultMood,
 
     // Detailed match data — v2 schema
     schemaVersion: 2,
@@ -161,6 +171,7 @@ export const buildMatchSummary = (state, overDisplay, runRate) => {
       boundaries:   state.innings1Stats.boundaries,
       sixes:        state.innings1Stats.sixes,
       dots:         state.innings1Stats.dots,
+      cumulativeRunSeries: state.innings1Stats.cumulativeRunSeries || [],
       teamName:     state.innings1Stats.teamName,
       teamFlag:     state.innings1Stats.teamFlag,
       battingSquad: state.innings1Stats.battingSquad,
@@ -174,6 +185,7 @@ export const buildMatchSummary = (state, overDisplay, runRate) => {
       boundaries:   state.boundaries,
       sixes:        state.sixes,
       dots:         state.dots,
+      cumulativeRunSeries: state.cumulativeRunSeries || [],
       teamName:     state.battingSquad?.teamName,
       teamFlag:     state.battingSquad?.flag,
       battingSquad: state.battingSquad,
@@ -185,12 +197,21 @@ export const buildMatchSummary = (state, overDisplay, runRate) => {
 
 const buildResultString = (state) => {
   if (state.target && state.runs >= state.target) {
-    return `Won — chased ${state.target} successfully`;
+    return `WON — CHASED ${state.target} SUCCESSFULLY`;
+  }
+  if (state.target && state.runs === state.target - 1) {
+    return 'TIED — SCORES LEVEL';
+  }
+  if (state.target) {
+    if (state.wickets >= 10) {
+      return `LOST — ALL OUT ${state.runs}`;
+    }
+    return 'LOST — TARGET DEFENDED';
   }
   if (state.wickets >= 10) {
-    return `All out for ${state.runs}`;
+    return `ALL OUT ${state.runs}`;
   }
-  return `${state.runs}/${state.wickets} declared`;
+  return `${state.runs}/${state.wickets}`;
 };
 
 // ─────────────────────────────────────────

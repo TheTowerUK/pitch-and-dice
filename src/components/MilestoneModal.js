@@ -4,13 +4,14 @@
 //  Fires on 50 and 100 individual scores.
 // ─────────────────────────────────────────
 
-import React, { useRef, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import {
-  Modal, View, Text, TouchableOpacity,
-  Animated, StyleSheet,
+  View, Text, TouchableOpacity,
+  StyleSheet,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { COLOURS, FONTS, SIZES, SPACE } from '../constants/theme';
+import { AnimatedMatchModal } from './animated/AnimatedMatchModal';
 
 const MILESTONE_CONFIG = {
   50: {
@@ -41,34 +42,11 @@ const MILESTONE_CONFIG = {
   },
 };
 
-export const MilestoneModal = ({ visible, milestone, batsmanName, onConfirm }) => {
-  const scaleAnim   = useRef(new Animated.Value(0.5)).current;
-  const opacityAnim = useRef(new Animated.Value(0)).current;
-  const bounceAnim  = useRef(new Animated.Value(0)).current;
-
+export const MilestoneModal = ({ visible, milestone, batsmanName, onConfirm, captureMode = false }) => {
   useEffect(() => {
     if (visible && milestone) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       // Milestone audio is owned exclusively by GameScreen (dice commit path).
-      scaleAnim.setValue(0.5);
-      opacityAnim.setValue(0);
-      bounceAnim.setValue(0);
-
-      Animated.parallel([
-        Animated.spring(scaleAnim, {
-          toValue: 1, friction: 4, tension: 100, useNativeDriver: true,
-        }),
-        Animated.timing(opacityAnim, {
-          toValue: 1, duration: 200, useNativeDriver: true,
-        }),
-      ]).start(() => {
-        Animated.sequence([
-          Animated.timing(bounceAnim, { toValue: -12, duration: 150, useNativeDriver: true }),
-          Animated.timing(bounceAnim, { toValue: 0,   duration: 150, useNativeDriver: true }),
-          Animated.timing(bounceAnim, { toValue: -6,  duration: 100, useNativeDriver: true }),
-          Animated.timing(bounceAnim, { toValue: 0,   duration: 100, useNativeDriver: true }),
-        ]).start();
-      });
     }
   }, [visible, milestone]);
 
@@ -77,16 +55,21 @@ export const MilestoneModal = ({ visible, milestone, batsmanName, onConfirm }) =
   const cfg     = MILESTONE_CONFIG[milestone];
   if (!cfg) return null;
 
-  const flavour = cfg.flavours[Math.floor(Math.random() * cfg.flavours.length)];
+  const flavour = captureMode
+    ? cfg.flavours[0]
+    : cfg.flavours[Math.floor(Math.random() * cfg.flavours.length)];
 
   return (
-    <Modal transparent visible={visible} animationType="fade" statusBarTranslucent>
-      <View style={styles.overlay}>
-        <Animated.View style={[
+    <AnimatedMatchModal
+      visible={visible}
+      type="fifty"
+      overlayStyle={styles.overlay}
+      cardStyle={[
           styles.card,
           { borderColor: cfg.colour },
-          { opacity: opacityAnim, transform: [{ scale: scaleAnim }, { translateY: bounceAnim }] },
-        ]}>
+        ]}
+      captureMode={captureMode}
+    >
 
           {/* Glow header */}
           <View style={[styles.header, { backgroundColor: cfg.colour + '22' }]}>
@@ -97,7 +80,7 @@ export const MilestoneModal = ({ visible, milestone, batsmanName, onConfirm }) =
           {/* Score display */}
           <View style={styles.scoreRow}>
             <Text style={[styles.scoreNum, { color: cfg.colour }]}>{milestone}</Text>
-            <Text style={styles.scoreUnit}>runs</Text>
+            <Text style={styles.scoreUnit}>RUNS</Text>
           </View>
 
           {/* Batsman name */}
@@ -114,16 +97,14 @@ export const MilestoneModal = ({ visible, milestone, batsmanName, onConfirm }) =
             <Text style={styles.btnText}>CONTINUE →</Text>
           </TouchableOpacity>
 
-        </Animated.View>
-      </View>
-    </Modal>
+    </AnimatedMatchModal>
   );
 };
 
 const styles = StyleSheet.create({
   overlay: {
     flex:            1,
-    backgroundColor: 'rgba(0,0,0,0.88)',
+    backgroundColor: 'rgba(0,0,0,0.96)',
     alignItems:      'center',
     justifyContent:  'center',
     padding:         SPACE.xl,
@@ -159,20 +140,20 @@ const styles = StyleSheet.create({
   },
   scoreNum: {
     fontFamily:    FONTS.display,
-    fontSize:      80,
-    lineHeight:    84,
+    fontSize:      92,
+    lineHeight:    96,
     letterSpacing: 2,
   },
   scoreUnit: {
     fontFamily:    FONTS.display,
-    fontSize:      SIZES.xl,
+    fontSize:      SIZES.xxl,
     color:         COLOURS.dot,
     letterSpacing: 2,
     marginBottom:  SPACE.sm,
   },
   batsmanName: {
     fontFamily:    FONTS.display,
-    fontSize:      SIZES.xl,
+    fontSize:      18,
     color:         COLOURS.cream,
     letterSpacing: 3,
     marginTop:     SPACE.sm,

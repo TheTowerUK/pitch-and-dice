@@ -35,7 +35,7 @@ export const BATSMAN_PRESETS = [
   { name: 'Tailender',    skill: 2,  description: 'Barely holds a bat' },
   { name: 'Lower Order',  skill: 4,  description: 'Defends well, rarely scores' },
   { name: 'County Pro',   skill: 6,  description: 'Solid all-round batsman' },
-  { name: 'International',skill: 8,  description: 'Technically excellent' },
+  { name: 'Elite Pro',    skill: 8,  description: 'Technically excellent' },
   { name: 'World Class',  skill: 10, description: 'Once in a generation talent' },
 ];
 
@@ -43,7 +43,7 @@ export const BOWLER_PRESETS = [
   { name: 'Club Trundler', skill: 2,  description: 'Gentle medium pace' },
   { name: 'County Seamer', skill: 4,  description: 'Decent line and length' },
   { name: 'Pro Spinner',   skill: 6,  description: 'Turns it both ways' },
-  { name: 'Test Bowler',   skill: 8,  description: 'Dangerous with any ball' },
+  { name: 'Strike Bowler', skill: 8,  description: 'Dangerous with any ball' },
   { name: 'Elite Striker', skill: 10, description: 'Unplayable on their day' },
 ];
 

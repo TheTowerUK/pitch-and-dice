@@ -2,21 +2,22 @@
 //  RollButton.js
 // ─────────────────────────────────────────
 
-import React, { useRef } from 'react';
-import { TouchableOpacity, Text, Animated, StyleSheet } from 'react-native';
+import React from 'react';
+import { TouchableOpacity, Text, View, StyleSheet } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { COLOURS, FONTS, SIZES, SPACE } from '../constants/theme';
 import { SHOT_CONFIG } from '../engine/diceEngine';
 
-export const RollButton = ({ selectedShot, onRoll, disabled, gameMode = 'manual', statusLabel = null }) => {
-  const scaleAnim = useRef(new Animated.Value(1)).current;
-
+export const RollButton = ({
+  selectedShot,
+  onRoll,
+  disabled,
+  gameMode = 'manual',
+  statusLabel = null,
+}) => {
   const handlePress = () => {
+    if (disabled) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    Animated.sequence([
-      Animated.timing(scaleAnim, { toValue: 0.95, duration: 80, useNativeDriver: true }),
-      Animated.timing(scaleAnim, { toValue: 1,    duration: 80, useNativeDriver: true }),
-    ]).start();
     onRoll();
   };
 
@@ -32,7 +33,7 @@ export const RollButton = ({ selectedShot, onRoll, disabled, gameMode = 'manual'
   }
 
   return (
-    <Animated.View style={[{ transform: [{ scale: scaleAnim }] }, styles.wrapper]}>
+    <View style={styles.wrapper}>
       <TouchableOpacity
         style={[styles.btn, disabled && styles.btnDisabled]}
         onPress={handlePress}
@@ -43,7 +44,7 @@ export const RollButton = ({ selectedShot, onRoll, disabled, gameMode = 'manual'
           {label}
         </Text>
       </TouchableOpacity>
-    </Animated.View>
+    </View>
   );
 };
 
@@ -57,6 +58,7 @@ const styles = StyleSheet.create({
     borderRadius: 3,
     paddingVertical: SPACE.lg,
     alignItems: 'center',
+    overflow: 'hidden',
     shadowColor: COLOURS.gold,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,

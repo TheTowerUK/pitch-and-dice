@@ -8,14 +8,39 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { COLOURS, FONTS, SIZES, SPACE } from '../constants/theme';
 import { SHOT_KEYS, SHOT_CONFIG, AGGRESSION_KEYS, AGGRESSION_CONFIG } from '../engine/diceEngine';
 
+const AGGRESSION_TONES = {
+  conservative: {
+    activeBg: '#34495e',
+    activeBorder: '#6f879d',
+    activeText: '#dce7ef',
+    glow: '#6f879d',
+    subtext: 'SAFE PLAY',
+  },
+  balanced: {
+    activeBg: '#1f5f3b',
+    activeBorder: '#35b873',
+    activeText: '#f4fff8',
+    glow: COLOURS.runs1,
+    subtext: 'STANDARD RISK',
+  },
+  aggressive: {
+    activeBg: '#74311f',
+    activeBorder: '#e86d3d',
+    activeText: '#fff3ec',
+    glow: COLOURS.boundary,
+    subtext: 'BOUNDARY HUNT',
+  },
+};
+
 // ── Shot Button ──────────────────────────
 const ShotBtn = ({ shotKey, selected, onPress }) => {
   const cfg = SHOT_CONFIG[shotKey];
+
   return (
     <TouchableOpacity
       style={[styles.shotBtn, selected && styles.shotBtnSelected]}
       onPress={() => onPress(shotKey)}
-      activeOpacity={0.7}
+      activeOpacity={0.75}
     >
       <Text style={[styles.shotName, selected && styles.shotNameSelected]}>
         {cfg.display}
@@ -33,14 +58,25 @@ const ShotBtn = ({ shotKey, selected, onPress }) => {
 // ── Aggression Button ────────────────────
 const AggBtn = ({ aggKey, selected, onPress }) => {
   const cfg = AGGRESSION_CONFIG[aggKey];
+  const tone = AGGRESSION_TONES[aggKey] || AGGRESSION_TONES.balanced;
+
   return (
     <TouchableOpacity
-      style={[styles.aggBtn, selected && { backgroundColor: cfg.colour, borderColor: cfg.colour }]}
+      style={[
+        styles.aggBtn,
+        selected && {
+          backgroundColor: tone.activeBg,
+          borderColor: tone.activeBorder,
+        },
+      ]}
       onPress={() => onPress(aggKey)}
-      activeOpacity={0.7}
+      activeOpacity={0.75}
     >
-      <Text style={[styles.aggText, selected && styles.aggTextSelected]}>
+      <Text style={[styles.aggText, selected && { color: tone.activeText }]}>
         {cfg.label}
+      </Text>
+      <Text style={[styles.aggSubtext, selected && { color: tone.activeText, opacity: 0.86 }]}>
+        {tone.subtext}
       </Text>
     </TouchableOpacity>
   );
@@ -114,10 +150,12 @@ const styles = StyleSheet.create({
     paddingVertical: SPACE.md,
     paddingHorizontal: 4,
     alignItems: 'center',
+    shadowColor: COLOURS.gold,
+    shadowOffset: { width: 0, height: 3 },
   },
   shotBtnSelected: {
     backgroundColor: COLOURS.gold,
-    borderColor: COLOURS.gold,
+    borderColor: COLOURS.goldLight,
   },
   shotName: {
     fontFamily: FONTS.display,
@@ -133,7 +171,7 @@ const styles = StyleSheet.create({
     color: COLOURS.gold,
     letterSpacing: 1,
   },
-  shotDieSelected: { color: COLOURS.ink, opacity: 0.7 },
+  shotDieSelected: { color: COLOURS.ink, opacity: 0.72 },
   shotRisk: {
     fontFamily: FONTS.mono,
     fontSize: 8,
@@ -141,7 +179,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
     letterSpacing: 0.5,
   },
-  shotRiskSelected: { color: COLOURS.ink, opacity: 0.6 },
+  shotRiskSelected: { color: COLOURS.ink, opacity: 0.62 },
 
   // Aggression buttons
   aggRow: {
@@ -154,8 +192,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
     borderRadius: 3,
-    paddingVertical: SPACE.md,
+    paddingVertical: SPACE.sm,
     alignItems: 'center',
+    shadowOffset: { width: 0, height: 3 },
   },
   aggText: {
     fontFamily: FONTS.display,
@@ -163,5 +202,10 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
     color: COLOURS.cream,
   },
-  aggTextSelected: { color: COLOURS.white },
+  aggSubtext: {
+    fontFamily: FONTS.mono,
+    fontSize: 8,
+    letterSpacing: 0.8,
+    marginTop: 3,
+  },
 });

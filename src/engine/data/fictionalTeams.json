@@ -1,0 +1,170 @@
+[
+  {
+    "id": "northern_strikers",
+    "name": "Northern Strikers",
+    "shortName": "NST",
+    "flag": "🛡️",
+    "colour": "#375a7f",
+    "accent": "#f39c12",
+    "players": [
+      { "id": "NST_01", "name": "Rylan Frost", "role": "Batter", "battingSkill": 82, "bowlingSkill": 18 },
+      { "id": "NST_02", "name": "Callan Hayes", "role": "Batter", "battingSkill": 79, "bowlingSkill": 21 },
+      { "id": "NST_03", "name": "Owen Mercer", "role": "Batter", "battingSkill": 76, "bowlingSkill": 22 },
+      { "id": "NST_04", "name": "Milo Crewe", "role": "Batter", "battingSkill": 73, "bowlingSkill": 26 },
+      { "id": "NST_05", "name": "Ethan Rowe", "role": "All-Rounder", "battingSkill": 74, "bowlingSkill": 68 },
+      { "id": "NST_06", "name": "Lewis Hart", "role": "All-Rounder", "battingSkill": 70, "bowlingSkill": 72 },
+      { "id": "NST_07", "name": "Ben Armitage", "role": "Wicketkeeper", "battingSkill": 73, "bowlingSkill": 10 },
+      { "id": "NST_08", "name": "Nate Pike", "role": "Bowler", "battingSkill": 28, "bowlingSkill": 80 },
+      { "id": "NST_09", "name": "Joel Barrett", "role": "Bowler", "battingSkill": 24, "bowlingSkill": 77 },
+      { "id": "NST_10", "name": "Tyler Dean", "role": "Bowler", "battingSkill": 26, "bowlingSkill": 74 },
+      { "id": "NST_11", "name": "Adam Kerr", "role": "Bowler", "battingSkill": 20, "bowlingSkill": 78 }
+    ]
+  },
+  {
+    "id": "coastal_blaze",
+    "name": "Coastal Blaze",
+    "shortName": "CBZ",
+    "flag": "🔥",
+    "colour": "#6c5b7b",
+    "accent": "#f8b195",
+    "players": [
+      { "id": "CBZ_01", "name": "Jace Holloway", "role": "Batter", "battingSkill": 81, "bowlingSkill": 16 },
+      { "id": "CBZ_02", "name": "Mason Reid", "role": "Batter", "battingSkill": 79, "bowlingSkill": 18 },
+      { "id": "CBZ_03", "name": "Kai Bennett", "role": "Batter", "battingSkill": 75, "bowlingSkill": 24 },
+      { "id": "CBZ_04", "name": "Rory Vale", "role": "Batter", "battingSkill": 72, "bowlingSkill": 27 },
+      { "id": "CBZ_05", "name": "Dylan Ford", "role": "All-Rounder", "battingSkill": 72, "bowlingSkill": 70 },
+      { "id": "CBZ_06", "name": "Harvey Quinn", "role": "All-Rounder", "battingSkill": 71, "bowlingSkill": 73 },
+      { "id": "CBZ_07", "name": "Liam Cross", "role": "Wicketkeeper", "battingSkill": 74, "bowlingSkill": 8 },
+      { "id": "CBZ_08", "name": "Connor Wade", "role": "Bowler", "battingSkill": 27, "bowlingSkill": 79 },
+      { "id": "CBZ_09", "name": "Jamie Cole", "role": "Bowler", "battingSkill": 25, "bowlingSkill": 76 },
+      { "id": "CBZ_10", "name": "Aron Steele", "role": "Bowler", "battingSkill": 23, "bowlingSkill": 74 },
+      { "id": "CBZ_11", "name": "Luke Morrow", "role": "Bowler", "battingSkill": 19, "bowlingSkill": 78 }
+    ]
+  },
+  {
+    "id": "southern_storm",
+    "name": "Southern Storm",
+    "shortName": "SST",
+    "flag": "🌩️",
+    "colour": "#2a363b",
+    "accent": "#e84a5f",
+    "players": [
+      { "id": "SST_01", "name": "Elliot Fraser", "role": "Batter", "battingSkill": 82, "bowlingSkill": 17 },
+      { "id": "SST_02", "name": "Callan Rhodes", "role": "Batter", "battingSkill": 78, "bowlingSkill": 19 },
+      { "id": "SST_03", "name": "Isaac Merton", "role": "Batter", "battingSkill": 76, "bowlingSkill": 23 },
+      { "id": "SST_04", "name": "Levi Stanton", "role": "Batter", "battingSkill": 74, "bowlingSkill": 25 },
+      { "id": "SST_05", "name": "Harley Townsend", "role": "All-Rounder", "battingSkill": 73, "bowlingSkill": 68 },
+      { "id": "SST_06", "name": "Myles Keegan", "role": "All-Rounder", "battingSkill": 71, "bowlingSkill": 72 },
+      { "id": "SST_07", "name": "Nate Briggs", "role": "Wicketkeeper", "battingSkill": 74, "bowlingSkill": 8 },
+      { "id": "SST_08", "name": "Jamie Corbett", "role": "Bowler", "battingSkill": 27, "bowlingSkill": 81 },
+      { "id": "SST_09", "name": "Riley Forster", "role": "Bowler", "battingSkill": 24, "bowlingSkill": 77 },
+      { "id": "SST_10", "name": "Oskar Dyer", "role": "Bowler", "battingSkill": 22, "bowlingSkill": 75 },
+      { "id": "SST_11", "name": "Tom Calder", "role": "Bowler", "battingSkill": 21, "bowlingSkill": 78 }
+    ]
+  },
+  {
+    "id": "south_east_royals",
+    "name": "South East Royals",
+    "shortName": "SER",
+    "flag": "👑",
+    "colour": "#5b3a8e",
+    "accent": "#e6c35c",
+    "players": [
+      { "id": "SER_01", "name": "Alden Pierce", "role": "Batter", "battingSkill": 80, "bowlingSkill": 17 },
+      { "id": "SER_02", "name": "Keir Dalton", "role": "Batter", "battingSkill": 78, "bowlingSkill": 20 },
+      { "id": "SER_03", "name": "Finn Draper", "role": "Batter", "battingSkill": 75, "bowlingSkill": 22 },
+      { "id": "SER_04", "name": "Rafe Norton", "role": "Batter", "battingSkill": 73, "bowlingSkill": 25 },
+      { "id": "SER_05", "name": "Marlon Voss", "role": "All-Rounder", "battingSkill": 72, "bowlingSkill": 70 },
+      { "id": "SER_06", "name": "Jonas Wren", "role": "All-Rounder", "battingSkill": 70, "bowlingSkill": 72 },
+      { "id": "SER_07", "name": "Galen Pryor", "role": "Wicketkeeper", "battingSkill": 74, "bowlingSkill": 9 },
+      { "id": "SER_08", "name": "Bryn Carden", "role": "Bowler", "battingSkill": 27, "bowlingSkill": 80 },
+      { "id": "SER_09", "name": "Taran Wells", "role": "Bowler", "battingSkill": 24, "bowlingSkill": 77 },
+      { "id": "SER_10", "name": "Niall Rowntree", "role": "Bowler", "battingSkill": 22, "bowlingSkill": 75 },
+      { "id": "SER_11", "name": "Dax Linden", "role": "Bowler", "battingSkill": 20, "bowlingSkill": 78 }
+    ]
+  },
+  {
+    "id": "south_west_mariners",
+    "name": "South West Mariners",
+    "shortName": "SWM",
+    "flag": "⚓",
+    "colour": "#1f5c73",
+    "accent": "#f0b36a",
+    "players": [
+      { "id": "SWM_01", "name": "Cade Mirren", "role": "Batter", "battingSkill": 81, "bowlingSkill": 16 },
+      { "id": "SWM_02", "name": "Ronan Veil", "role": "Batter", "battingSkill": 78, "bowlingSkill": 19 },
+      { "id": "SWM_03", "name": "Silas Trent", "role": "Batter", "battingSkill": 76, "bowlingSkill": 22 },
+      { "id": "SWM_04", "name": "Mika Dorne", "role": "Batter", "battingSkill": 73, "bowlingSkill": 26 },
+      { "id": "SWM_05", "name": "Perry Locke", "role": "All-Rounder", "battingSkill": 72, "bowlingSkill": 69 },
+      { "id": "SWM_06", "name": "Evan Shore", "role": "All-Rounder", "battingSkill": 70, "bowlingSkill": 72 },
+      { "id": "SWM_07", "name": "Jory Pike", "role": "Wicketkeeper", "battingSkill": 74, "bowlingSkill": 9 },
+      { "id": "SWM_08", "name": "Corin Vale", "role": "Bowler", "battingSkill": 26, "bowlingSkill": 80 },
+      { "id": "SWM_09", "name": "Blaine Oakes", "role": "Bowler", "battingSkill": 24, "bowlingSkill": 77 },
+      { "id": "SWM_10", "name": "Torin Hale", "role": "Bowler", "battingSkill": 22, "bowlingSkill": 75 },
+      { "id": "SWM_11", "name": "Kellan Rhys", "role": "Bowler", "battingSkill": 20, "bowlingSkill": 78 }
+    ]
+  },
+  {
+    "id": "west_midlands_falcons",
+    "name": "West Midlands Falcons",
+    "shortName": "WMF",
+    "flag": "🦅",
+    "colour": "#4f6d4a",
+    "accent": "#d9a441",
+    "players": [
+      { "id": "WMF_01", "name": "Ari Calder", "role": "Batter", "battingSkill": 80, "bowlingSkill": 18 },
+      { "id": "WMF_02", "name": "Rhett Bram", "role": "Batter", "battingSkill": 78, "bowlingSkill": 20 },
+      { "id": "WMF_03", "name": "Nico Dray", "role": "Batter", "battingSkill": 75, "bowlingSkill": 23 },
+      { "id": "WMF_04", "name": "Beck Rowan", "role": "Batter", "battingSkill": 73, "bowlingSkill": 25 },
+      { "id": "WMF_05", "name": "Luca Fen", "role": "All-Rounder", "battingSkill": 72, "bowlingSkill": 69 },
+      { "id": "WMF_06", "name": "Ivor Slade", "role": "All-Rounder", "battingSkill": 70, "bowlingSkill": 72 },
+      { "id": "WMF_07", "name": "Kye Larkin", "role": "Wicketkeeper", "battingSkill": 74, "bowlingSkill": 8 },
+      { "id": "WMF_08", "name": "Darin Yew", "role": "Bowler", "battingSkill": 27, "bowlingSkill": 80 },
+      { "id": "WMF_09", "name": "Orrin Knox", "role": "Bowler", "battingSkill": 24, "bowlingSkill": 77 },
+      { "id": "WMF_10", "name": "Pax Deller", "role": "Bowler", "battingSkill": 22, "bowlingSkill": 75 },
+      { "id": "WMF_11", "name": "Merric Stone", "role": "Bowler", "battingSkill": 20, "bowlingSkill": 78 }
+    ]
+  },
+  {
+    "id": "east_midlands_knights",
+    "name": "East Midlands Knights",
+    "shortName": "EMK",
+    "flag": "🗡️",
+    "colour": "#3f4e8c",
+    "accent": "#c6d36f",
+    "players": [
+      { "id": "EMK_01", "name": "Bren Talbot", "role": "Batter", "battingSkill": 81, "bowlingSkill": 17 },
+      { "id": "EMK_02", "name": "Kellan Vey", "role": "Batter", "battingSkill": 78, "bowlingSkill": 19 },
+      { "id": "EMK_03", "name": "Riven Holt", "role": "Batter", "battingSkill": 76, "bowlingSkill": 22 },
+      { "id": "EMK_04", "name": "Tobin Marr", "role": "Batter", "battingSkill": 73, "bowlingSkill": 26 },
+      { "id": "EMK_05", "name": "Jasper Quill", "role": "All-Rounder", "battingSkill": 72, "bowlingSkill": 70 },
+      { "id": "EMK_06", "name": "Corwin Dale", "role": "All-Rounder", "battingSkill": 70, "bowlingSkill": 72 },
+      { "id": "EMK_07", "name": "Alden Hume", "role": "Wicketkeeper", "battingSkill": 74, "bowlingSkill": 9 },
+      { "id": "EMK_08", "name": "Vance Reeve", "role": "Bowler", "battingSkill": 27, "bowlingSkill": 80 },
+      { "id": "EMK_09", "name": "Grady Finn", "role": "Bowler", "battingSkill": 24, "bowlingSkill": 77 },
+      { "id": "EMK_10", "name": "Nero Cline", "role": "Bowler", "battingSkill": 22, "bowlingSkill": 75 },
+      { "id": "EMK_11", "name": "Dorian Pike", "role": "Bowler", "battingSkill": 20, "bowlingSkill": 78 }
+    ]
+  },
+  {
+    "id": "north_east_guardians",
+    "name": "North East Guardians",
+    "shortName": "NEG",
+    "flag": "🧭",
+    "colour": "#2f6770",
+    "accent": "#f2c572",
+    "players": [
+      { "id": "NEG_01", "name": "Soren Blythe", "role": "Batter", "battingSkill": 81, "bowlingSkill": 16 },
+      { "id": "NEG_02", "name": "Marek Tully", "role": "Batter", "battingSkill": 79, "bowlingSkill": 18 },
+      { "id": "NEG_03", "name": "Callow Drake", "role": "Batter", "battingSkill": 75, "bowlingSkill": 23 },
+      { "id": "NEG_04", "name": "Jalen Crowe", "role": "Batter", "battingSkill": 73, "bowlingSkill": 25 },
+      { "id": "NEG_05", "name": "Ilan Mercer", "role": "All-Rounder", "battingSkill": 72, "bowlingSkill": 69 },
+      { "id": "NEG_06", "name": "Keaton Marsh", "role": "All-Rounder", "battingSkill": 70, "bowlingSkill": 72 },
+      { "id": "NEG_07", "name": "Brice Norland", "role": "Wicketkeeper", "battingSkill": 74, "bowlingSkill": 8 },
+      { "id": "NEG_08", "name": "Torren Gale", "role": "Bowler", "battingSkill": 27, "bowlingSkill": 80 },
+      { "id": "NEG_09", "name": "Perrin Locke", "role": "Bowler", "battingSkill": 24, "bowlingSkill": 77 },
+      { "id": "NEG_10", "name": "Dax Ember", "role": "Bowler", "battingSkill": 22, "bowlingSkill": 75 },
+      { "id": "NEG_11", "name": "Quin Alder", "role": "Bowler", "battingSkill": 20, "bowlingSkill": 78 }
+    ]
+  }
+]

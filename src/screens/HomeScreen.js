@@ -13,11 +13,15 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLOURS, FONTS, SIZES, SPACE, getFormatScoreboardLabel } from '../constants/theme';
 import { HelpScreen } from './HelpScreen';
+import { ScreenshotStudioPanel } from '../tools/screenshotStudio/ScreenshotStudioPanel';
+import { ENABLE_SCREENSHOT_STUDIO } from '../tools/screenshotStudio/screenshotPresets';
 
 export const HomeScreen = ({
   onNewMatch, onContinue, onHistory, hasResumableMatch, resumableMatch,
+  onStartScreenshotPreset,
 }) => {
   const [showHelp, setShowHelp] = useState(false);
+  const [showScreenshotStudio, setShowScreenshotStudio] = useState(false);
   const [soundMuted, setSoundMuted] = useState(() => isAudioMuted());
   const [muteBusy, setMuteBusy] = useState(false);
 
@@ -77,7 +81,36 @@ export const HomeScreen = ({
     }
   };
 
-  if (showHelp) return <HelpScreen onBack={() => setShowHelp(false)} />;
+  const openScreenshotStudio = () => {
+    if (!ENABLE_SCREENSHOT_STUDIO) return;
+    if (__DEV__) console.log('[screenshot-studio] opened from help tools');
+    setShowHelp(false);
+    setShowScreenshotStudio(true);
+  };
+
+  const applyScreenshotPreset = (presetId) => {
+    if (!ENABLE_SCREENSHOT_STUDIO) return;
+    setShowScreenshotStudio(false);
+    onStartScreenshotPreset?.(presetId);
+  };
+
+  if (showScreenshotStudio) {
+    return (
+      <ScreenshotStudioPanel
+        onBack={() => setShowScreenshotStudio(false)}
+        onApplyPreset={applyScreenshotPreset}
+      />
+    );
+  }
+
+  if (showHelp) {
+    return (
+      <HelpScreen
+        onBack={() => setShowHelp(false)}
+        onOpenScreenshotStudio={ENABLE_SCREENSHOT_STUDIO ? openScreenshotStudio : undefined}
+      />
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safe}>

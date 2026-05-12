@@ -7,13 +7,14 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  Modal, View, Text, TouchableOpacity,
+  View, Text, TouchableOpacity,
   Animated, StyleSheet,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { COLOURS, FONTS, SIZES, SPACE } from '../constants/theme';
 import { rollDie } from '../engine/diceEngine';
 import { playSoundForDRS } from '../engine/soundEngine';
+import { AnimatedMatchModal } from './animated/AnimatedMatchModal';
 
 // ─────────────────────────────────────────
 //  DRS RESOLUTION
@@ -52,8 +53,7 @@ const resolveDRS = () => {
   };
 };
 
-export const WicketModal = ({ visible, wicket, drsReviews, onConfirm, onDRS }) => {
-  const scaleAnim = useRef(new Animated.Value(0.8)).current;
+export const WicketModal = ({ visible, wicket, drsReviews, onConfirm, onDRS, captureMode = false }) => {
   const drsAnim   = useRef(new Animated.Value(0)).current;
   const [drsResult, setDrsResult]     = useState(null);
   const [reviewing,  setReviewing]    = useState(false);
@@ -63,14 +63,6 @@ export const WicketModal = ({ visible, wicket, drsReviews, onConfirm, onDRS }) =
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
       setDrsResult(null);
       setReviewing(false);
-      scaleAnim.setValue(0.8);
-      Animated.spring(scaleAnim, {
-        toValue: 1.02, friction: 5, tension: 120, useNativeDriver: true,
-      }).start(() => {
-        Animated.spring(scaleAnim, {
-          toValue: 1, friction: 8, tension: 80, useNativeDriver: true,
-        }).start();
-      });
     }
   }, [visible, wicket]);
 
@@ -107,9 +99,13 @@ export const WicketModal = ({ visible, wicket, drsReviews, onConfirm, onDRS }) =
   const showDRS    = wicket.drs;
 
   return (
-    <Modal transparent visible={visible} animationType="fade" statusBarTranslucent>
-      <View style={styles.overlay}>
-        <Animated.View style={[styles.card, { transform: [{ scale: scaleAnim }] }]}>
+    <AnimatedMatchModal
+      visible={visible}
+      type="wicket"
+      overlayStyle={styles.overlay}
+      cardStyle={styles.card}
+      captureMode={captureMode}
+    >
 
           {/* Header */}
           <View style={styles.header}>
@@ -199,16 +195,14 @@ export const WicketModal = ({ visible, wicket, drsReviews, onConfirm, onDRS }) =
             )}
           </View>
 
-        </Animated.View>
-      </View>
-    </Modal>
+    </AnimatedMatchModal>
   );
 };
 
 const styles = StyleSheet.create({
   overlay: {
     flex:            1,
-    backgroundColor: 'rgba(0,0,0,0.88)',
+    backgroundColor: 'rgba(0,0,0,0.96)',
     alignItems:      'center',
     justifyContent:  'center',
     padding:         SPACE.xl,
