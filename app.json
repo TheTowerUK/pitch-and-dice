@@ -5,15 +5,30 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
+    "icon": "./src/assets/icons/icon.png",
+    "splash": {
+      "image": "./src/assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1a1a1a"
+    },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.pitchanddice.app"
+      "bundleIdentifier": "com.pitchanddice.app",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "com.pitchanddice.app"
     },
     "plugins": [
       "expo-font"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "960aa0dc-b851-4270-9e9e-4392486841b1"
+      }
+    },
+    "owner": "thetower"
   }
 }
