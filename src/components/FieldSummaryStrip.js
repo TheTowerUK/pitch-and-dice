@@ -25,19 +25,19 @@ const ZonePip = ({ zoneKey, count }) => {
   );
 };
 
-export const FieldSummaryStrip = ({ field, onEditPress, showEdit = true, label: labelProp }) => {
+export const FieldSummaryStrip = ({ field, onEditPress, showEdit = true, label: labelProp, compact = false }) => {
   if (!field) return null;
 
   const totalFielders = Object.values(field).reduce((s, n) => s + n, 0);
   const headerLabel   = labelProp ?? 'CURRENT FIELD';
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, compact && styles.containerCompact]}>
       {/* Header row */}
-      <View style={styles.headerRow}>
+      <View style={[styles.headerRow, compact && styles.headerRowCompact]}>
         <Text style={styles.label}>{headerLabel}</Text>
         <View style={styles.headerRight}>
-          <Text style={styles.totalText}>{totalFielders}/9 placed</Text>
+          <Text style={styles.totalText}>{totalFielders}/9</Text>
           {showEdit && (
             <TouchableOpacity style={styles.editBtn} onPress={onEditPress}>
               <Text style={styles.editText}>CHANGE</Text>
@@ -47,11 +47,13 @@ export const FieldSummaryStrip = ({ field, onEditPress, showEdit = true, label: 
       </View>
 
       {/* Zone pips */}
-      <View style={styles.zonesRow}>
-        {ZONE_KEYS.map(key => (
-          <ZonePip key={key} zoneKey={key} count={field[key] || 0} />
-        ))}
-      </View>
+      {!compact && (
+        <View style={styles.zonesRow}>
+          {ZONE_KEYS.map(key => (
+            <ZonePip key={key} zoneKey={key} count={field[key] || 0} />
+          ))}
+        </View>
+      )}
     </View>
   );
 };
@@ -65,6 +67,15 @@ const styles = StyleSheet.create({
     borderColor:      'rgba(255,255,255,0.07)',
     borderRadius:     3,
     padding:          SPACE.md,
+  },
+  containerCompact: {
+    marginHorizontal: SPACE.md,
+    marginBottom: SPACE.xs,
+    paddingHorizontal: SPACE.sm,
+    paddingVertical: SPACE.xs,
+  },
+  headerRowCompact: {
+    marginBottom: 0,
   },
   headerRow: {
     flexDirection:  'row',

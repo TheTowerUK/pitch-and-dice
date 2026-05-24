@@ -13,6 +13,9 @@ export const Scoreboard = ({
   target, ballsRemaining, onHistoryPress, onPausePress,
   bowler, battingSquad, bowlingSquad, rrr, pressureTier,
   batters, battingOrder, players, strikerIndex, nonStrikerIndex,
+  compact = false,
+  stageLarge = false,
+  showOverComplete = false,
 }) => {
   const runsNeeded = target ? Math.max(0, target - runs) : null;
 
@@ -76,7 +79,12 @@ export const Scoreboard = ({
   return (
     <View style={styles.wrapper}>
       {/* Utility/header row — compact top bar */}
-      <View style={styles.utilityHeader}>
+      <View style={[
+        styles.utilityHeader,
+        compact && styles.utilityHeaderCompact,
+        stageLarge && styles.utilityHeaderLarge,
+      ]}
+      >
         <View style={styles.headerLeftMeta}>
           <Text
             style={styles.utilityMetaFormat}
@@ -106,7 +114,7 @@ export const Scoreboard = ({
 
       {/* Matchup strip — slim row above score */}
       {batTeam && bowlTeam && (
-        <View style={styles.matchup}>
+        <View style={[styles.matchup, compact && styles.matchupCompact, stageLarge && styles.matchupLarge]}>
           <Text style={styles.matchTeam} numberOfLines={1}>
             {batFlag} {batTeam}
           </Text>
@@ -117,64 +125,97 @@ export const Scoreboard = ({
         </View>
       )}
 
-      {/* Main scoreboard row — compact two-panel layout with center divider */}
-      <View style={styles.liveMatchRow}>
-        <View style={styles.scoreRow}>
-          <Text style={styles.runs}>{runs}</Text>
-          <Text style={styles.wicketsText}>/{wickets}</Text>
+      <View style={[
+        styles.scorePanel,
+        compact && styles.scorePanelCompact,
+        stageLarge && styles.scorePanelLarge,
+      ]}
+      >
+        {/* Main scoreboard row — score always visible; over-complete overlays center */}
+        <View style={[
+          styles.liveMatchRow,
+          compact && styles.liveMatchRowCompact,
+          stageLarge && styles.liveMatchRowLarge,
+        ]}
+        >
+          <View style={styles.scoreRow}>
+            <Text style={[styles.runs, compact && styles.runsCompact, stageLarge && styles.runsLarge]}>{runs}</Text>
+            <Text style={[styles.wicketsText, compact && styles.wicketsTextCompact, stageLarge && styles.wicketsTextLarge]}>/{wickets}</Text>
+          </View>
+          <View style={[styles.oversPill, compact && styles.oversPillCompact, stageLarge && styles.oversPillLarge]}>
+            <Text style={[styles.oversValue, compact && styles.oversValueCompact, stageLarge && styles.oversValueLarge]}>{overDisplay} overs</Text>
+          </View>
+          {showOverComplete && (
+            <View style={styles.overCompleteOverlay} pointerEvents="none">
+              <View style={[
+                styles.overCompleteBadge,
+                compact && styles.overCompleteBadgeCompact,
+                stageLarge && styles.overCompleteBadgeLarge,
+              ]}
+              >
+                <Text style={[
+                  styles.overCompleteText,
+                  compact && styles.overCompleteTextCompact,
+                  stageLarge && styles.overCompleteTextLarge,
+                ]}
+                >
+                  OVER COMPLETE
+                </Text>
+              </View>
+            </View>
+          )}
         </View>
-        <View style={styles.oversPill}>
-          <Text style={styles.oversValue}>{overDisplay} overs</Text>
-        </View>
+
+        {(target || bowlerFigures) ? (
+          <View style={[styles.contextRow, compact && styles.contextRowCompact, stageLarge && styles.contextRowLarge]}>
+            <View style={styles.contextLeft}>
+              {target ? (
+                <Text style={[styles.chaseLine, compact && styles.chaseLineCompact, stageLarge && styles.chaseLineLarge]} numberOfLines={1} ellipsizeMode="tail">
+                  Need {runsNeeded} from {ballsRemaining}
+                </Text>
+              ) : (
+                <Text style={[styles.chaseLine, compact && styles.chaseLineCompact, stageLarge && styles.chaseLineLarge]} numberOfLines={1} ellipsizeMode="tail">
+                  {bowlerFigures || ''}
+                </Text>
+              )}
+            </View>
+            <View style={styles.contextRight}>
+              {isActiveChase && typeof rrr === 'number' ? (
+                <Text style={[styles.chaseRightLine, compact && styles.chaseRightLineCompact, stageLarge && styles.chaseRightLineLarge]} numberOfLines={1} ellipsizeMode="tail">
+                  RRR {rrr.toFixed(2)}
+                  {chaseState ? (
+                    <Text style={styles.chaseStateInline}>
+                      {' '}• <Text style={[styles.chaseStateTone, { color: chaseState.tone }]}>{chaseState.stateLabel}</Text>
+                    </Text>
+                  ) : null}
+                </Text>
+              ) : (
+                <Text style={[styles.chaseRightLine, compact && styles.chaseRightLineCompact, stageLarge && styles.chaseRightLineLarge]} numberOfLines={1} ellipsizeMode="tail">
+                  {target ? `Target ${target}` : ''}
+                </Text>
+              )}
+            </View>
+          </View>
+        ) : null}
       </View>
 
-      {(target || bowlerFigures) ? (
-        <View style={styles.contextRow}>
-          <View style={styles.contextLeft}>
-            {target ? (
-              <Text style={styles.chaseLine} numberOfLines={1} ellipsizeMode="tail">
-                Need {runsNeeded} from {ballsRemaining}
-              </Text>
-            ) : (
-              <Text style={styles.chaseLine} numberOfLines={1} ellipsizeMode="tail">
-                {bowlerFigures || ''}
-              </Text>
-            )}
+      {!compact && (
+        <View style={styles.batterRow}>
+          <View style={styles.batterBlock}>
+            <Text style={styles.batterLabel}>On Strike</Text>
+            <Text style={styles.batterName} numberOfLines={1} ellipsizeMode="tail">
+              {strikerName} *
+            </Text>
           </View>
-          <View style={styles.contextRight}>
-            {isActiveChase && typeof rrr === 'number' ? (
-              <Text style={styles.chaseRightLine} numberOfLines={1} ellipsizeMode="tail">
-                RRR {rrr.toFixed(2)}
-                {chaseState ? (
-                  <Text style={styles.chaseStateInline}>
-                    {' '}• <Text style={[styles.chaseStateTone, { color: chaseState.tone }]}>{chaseState.stateLabel}</Text>
-                  </Text>
-                ) : null}
-              </Text>
-            ) : (
-              <Text style={styles.chaseRightLine} numberOfLines={1} ellipsizeMode="tail">
-                {target ? `Target ${target}` : ''}
-              </Text>
-            )}
+          <View style={styles.batterDivider} />
+          <View style={styles.batterBlock}>
+            <Text style={styles.batterLabel}>Non-Striker</Text>
+            <Text style={styles.batterNameDim} numberOfLines={1} ellipsizeMode="tail">
+              {nonStrikerName}
+            </Text>
           </View>
         </View>
-      ) : null}
-
-      <View style={styles.batterRow}>
-        <View style={styles.batterBlock}>
-          <Text style={styles.batterLabel}>On Strike</Text>
-          <Text style={styles.batterName} numberOfLines={1} ellipsizeMode="tail">
-            {strikerName} *
-          </Text>
-        </View>
-        <View style={styles.batterDivider} />
-        <View style={styles.batterBlock}>
-          <Text style={styles.batterLabel}>Non-Striker</Text>
-          <Text style={styles.batterNameDim} numberOfLines={1} ellipsizeMode="tail">
-            {nonStrikerName}
-          </Text>
-        </View>
-      </View>
+      )}
     </View>
   );
 };
@@ -195,6 +236,94 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(212,160,23,0.12)',
     gap:               SPACE.sm,
+  },
+  utilityHeaderCompact: {
+    minHeight: 24,
+    paddingTop: 2,
+    paddingBottom: 2,
+  },
+  utilityHeaderLarge: {
+    minHeight: 30,
+    paddingHorizontal: SPACE.xl,
+  },
+  matchupCompact: {
+    paddingTop: SPACE.xs,
+    paddingBottom: 2,
+  },
+  matchupLarge: {
+    paddingTop: SPACE.sm,
+    paddingBottom: SPACE.xs,
+  },
+  scorePanel: {
+    width: '100%',
+  },
+  scorePanelCompact: {
+    paddingBottom: 2,
+  },
+  scorePanelLarge: {
+    paddingBottom: SPACE.xs,
+  },
+  liveMatchRowCompact: {
+    minHeight: 50,
+    paddingTop: 0,
+    paddingBottom: 0,
+  },
+  liveMatchRowLarge: {
+    minHeight: 58,
+    paddingTop: 2,
+    paddingBottom: 2,
+  },
+  runsCompact: {
+    fontSize: 48,
+    lineHeight: 50,
+  },
+  runsLarge: {
+    fontSize: 59,
+    lineHeight: 61,
+  },
+  wicketsTextCompact: {
+    fontSize: 33,
+    marginBottom: 3,
+  },
+  wicketsTextLarge: {
+    fontSize: 39,
+    marginBottom: 4,
+  },
+  oversPillCompact: {
+    marginLeft: 8,
+    paddingHorizontal: SPACE.sm,
+    paddingVertical: 2,
+  },
+  oversPillLarge: {
+    marginLeft: SPACE.md,
+    paddingHorizontal: SPACE.md,
+    paddingVertical: SPACE.xs,
+  },
+  oversValueCompact: {
+    fontSize: SIZES.sm,
+  },
+  oversValueLarge: {
+    fontSize: SIZES.md,
+  },
+  contextRowCompact: {
+    paddingTop: 2,
+    paddingBottom: 2,
+  },
+  contextRowLarge: {
+    paddingTop: 3,
+    paddingBottom: 3,
+  },
+  chaseLineCompact: {
+    fontSize: SIZES.sm,
+  },
+  chaseLineLarge: {
+    fontSize: SIZES.md,
+  },
+  chaseRightLineCompact: {
+    fontSize: SIZES.xs,
+  },
+  chaseRightLineLarge: {
+    fontSize: SIZES.sm,
   },
   utilityHeader: {
     minHeight:         28,
@@ -253,14 +382,50 @@ const styles = StyleSheet.create({
     opacity:       0.7,
   },
   liveMatchRow: {
-    minHeight:         75,
+    position:          'relative',
+    minHeight:         72,
     flexDirection:     'row',
     alignItems:        'center',
     justifyContent:    'space-between',
     paddingHorizontal: SPACE.lg,
-    paddingTop:        6,
-    paddingBottom:     3,
+    paddingVertical:   4,
     width:             '100%',
+  },
+  overCompleteOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 2,
+  },
+  overCompleteBadge: {
+    paddingHorizontal: SPACE.md,
+    paddingVertical: SPACE.xs,
+    borderWidth: 1,
+    borderColor: 'rgba(212,160,23,0.45)',
+    borderRadius: 3,
+    backgroundColor: 'rgba(26,26,26,0.88)',
+  },
+  overCompleteBadgeCompact: {
+    paddingVertical: 4,
+  },
+  overCompleteBadgeLarge: {
+    paddingHorizontal: SPACE.lg,
+    paddingVertical: SPACE.sm,
+  },
+  overCompleteText: {
+    fontFamily: FONTS.mono,
+    fontSize: SIZES.sm,
+    color: COLOURS.dot,
+    letterSpacing: 3,
+    textAlign: 'center',
+  },
+  overCompleteTextCompact: {
+    fontSize: SIZES.xs,
+    letterSpacing: 2,
+  },
+  overCompleteTextLarge: {
+    fontSize: SIZES.md,
+    letterSpacing: 3,
   },
   utilityControls: {
     flexShrink: 0,
@@ -272,6 +437,7 @@ const styles = StyleSheet.create({
   scoreRow:  {
     flexDirection: 'row',
     alignItems: 'flex-end',
+    marginTop: 10,
     marginRight: 12,
     borderRadius: 8,
     shadowColor: COLOURS.gold,
@@ -280,17 +446,17 @@ const styles = StyleSheet.create({
   },
   runs: {
     fontFamily:    FONTS.display,
-    fontSize:      57,
+    fontSize:      62,
     color:         COLOURS.cream,
     letterSpacing: 2,
-    lineHeight:    60,
+    lineHeight:    64,
   },
   wicketsText: {
     fontFamily:    FONTS.display,
-    fontSize:      41,
+    fontSize:      45,
     color:         COLOURS.red,
     letterSpacing: 1,
-    marginBottom:  5,
+    marginBottom:  4,
   },
   oversPill: {
     marginLeft: 12,
@@ -312,7 +478,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: SPACE.lg,
-    paddingBottom: SPACE.xs,
+    paddingTop: 2,
+    paddingBottom: 2,
     gap: SPACE.sm,
   },
   contextLeft: {
@@ -348,7 +515,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: SPACE.lg,
-    paddingTop: SPACE.xs,
+    paddingTop: 4,
     paddingBottom: SPACE.sm,
     borderTopWidth: 1,
     borderTopColor: 'rgba(255,255,255,0.08)',

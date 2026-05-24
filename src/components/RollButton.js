@@ -14,6 +14,8 @@ export const RollButton = ({
   disabled,
   gameMode = 'manual',
   statusLabel = null,
+  compact = false,
+  stageLarge = false,
 }) => {
   const handlePress = () => {
     if (disabled) return;
@@ -33,14 +35,14 @@ export const RollButton = ({
   }
 
   return (
-    <View style={styles.wrapper}>
+    <View style={[styles.wrapper, compact && styles.wrapperCompact, stageLarge && styles.wrapperLarge]}>
       <TouchableOpacity
-        style={[styles.btn, disabled && styles.btnDisabled]}
+        style={[styles.btn, compact && styles.btnCompact, stageLarge && styles.btnLarge, disabled && styles.btnDisabled]}
         onPress={handlePress}
         disabled={disabled}
         activeOpacity={0.85}
       >
-        <Text style={[styles.label, disabled && styles.labelDisabled]}>
+        <Text style={[styles.label, compact && styles.labelCompact, stageLarge && styles.labelLarge, disabled && styles.labelDisabled]}>
           {label}
         </Text>
       </TouchableOpacity>
@@ -52,6 +54,10 @@ const styles = StyleSheet.create({
   wrapper: {
     marginHorizontal: SPACE.lg,
     marginBottom: SPACE.md,
+  },
+  wrapperCompact: {
+    marginHorizontal: SPACE.md,
+    marginBottom: SPACE.sm,
   },
   btn: {
     backgroundColor: COLOURS.gold,
@@ -65,6 +71,18 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 6,
   },
+  btnCompact: {
+    paddingVertical: SPACE.md,
+  },
+  wrapperLarge: {
+    marginHorizontal: SPACE.lg,
+  },
+  btnLarge: {
+    paddingVertical: SPACE.lg,
+  },
+  labelLarge: {
+    fontSize: SIZES.xl,
+  },
   btnDisabled: {
     backgroundColor: COLOURS.slateMid,
     shadowOpacity: 0,
@@ -75,6 +93,10 @@ const styles = StyleSheet.create({
     fontSize: SIZES.xl,
     letterSpacing: 5,
     color: COLOURS.ink,
+  },
+  labelCompact: {
+    fontSize: SIZES.lg,
+    letterSpacing: 3,
   },
   labelDisabled: {
     color: COLOURS.dot,

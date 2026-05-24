@@ -33,30 +33,39 @@ const AGGRESSION_TONES = {
 };
 
 // ── Shot Button ──────────────────────────
-const ShotBtn = ({ shotKey, selected, onPress }) => {
+const ShotBtn = ({ shotKey, selected, onPress, compact, stageLarge, disabled }) => {
   const cfg = SHOT_CONFIG[shotKey];
 
   return (
     <TouchableOpacity
-      style={[styles.shotBtn, selected && styles.shotBtnSelected]}
+      style={[
+        styles.shotBtn,
+        compact && styles.shotBtnCompact,
+        stageLarge && styles.shotBtnLarge,
+        selected && styles.shotBtnSelected,
+        disabled && styles.btnDisabled,
+      ]}
       onPress={() => onPress(shotKey)}
       activeOpacity={0.75}
+      disabled={disabled}
     >
-      <Text style={[styles.shotName, selected && styles.shotNameSelected]}>
+      <Text style={[styles.shotName, compact && styles.shotNameCompact, stageLarge && styles.shotNameLarge, selected && styles.shotNameSelected]}>
         {cfg.display}
       </Text>
-      <Text style={[styles.shotDie, selected && styles.shotDieSelected]}>
+      <Text style={[styles.shotDie, compact && styles.shotDieCompact, selected && styles.shotDieSelected]}>
         {cfg.label}
       </Text>
-      <Text style={[styles.shotRisk, selected && styles.shotRiskSelected]}>
-        {cfg.risk}
-      </Text>
+      {!compact && (
+        <Text style={[styles.shotRisk, selected && styles.shotRiskSelected]}>
+          {cfg.risk}
+        </Text>
+      )}
     </TouchableOpacity>
   );
 };
 
 // ── Aggression Button ────────────────────
-const AggBtn = ({ aggKey, selected, onPress }) => {
+const AggBtn = ({ aggKey, selected, onPress, compact, stageLarge, disabled }) => {
   const cfg = AGGRESSION_CONFIG[aggKey];
   const tone = AGGRESSION_TONES[aggKey] || AGGRESSION_TONES.balanced;
 
@@ -64,20 +73,26 @@ const AggBtn = ({ aggKey, selected, onPress }) => {
     <TouchableOpacity
       style={[
         styles.aggBtn,
+        compact && styles.aggBtnCompact,
+        stageLarge && styles.aggBtnLarge,
         selected && {
           backgroundColor: tone.activeBg,
           borderColor: tone.activeBorder,
         },
+        disabled && styles.btnDisabled,
       ]}
       onPress={() => onPress(aggKey)}
       activeOpacity={0.75}
+      disabled={disabled}
     >
-      <Text style={[styles.aggText, selected && { color: tone.activeText }]}>
+      <Text style={[styles.aggText, compact && styles.aggTextCompact, selected && { color: tone.activeText }]}>
         {cfg.label}
       </Text>
-      <Text style={[styles.aggSubtext, selected && { color: tone.activeText, opacity: 0.86 }]}>
-        {tone.subtext}
-      </Text>
+      {!compact && (
+        <Text style={[styles.aggSubtext, selected && { color: tone.activeText, opacity: 0.86 }]}>
+          {tone.subtext}
+        </Text>
+      )}
     </TouchableOpacity>
   );
 };
@@ -86,12 +101,15 @@ const AggBtn = ({ aggKey, selected, onPress }) => {
 export const ShotSelector = ({
   selectedShot, selectedAggression,
   onSelectShot, onSelectAggression,
+  compact = false,
+  stageLarge = false,
+  disabled = false,
 }) => {
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, compact && styles.containerCompact, stageLarge && styles.containerLarge]}>
 
       {/* Shot Types */}
-      <Text style={styles.sectionLabel}>CHOOSE YOUR SHOT</Text>
+      <Text style={[styles.sectionLabel, compact && styles.sectionLabelCompact, stageLarge && styles.sectionLabelLarge]}>CHOOSE YOUR SHOT</Text>
       <View style={styles.shotRow}>
         {SHOT_KEYS.map(key => (
           <ShotBtn
@@ -99,12 +117,15 @@ export const ShotSelector = ({
             shotKey={key}
             selected={selectedShot === key}
             onPress={onSelectShot}
+            compact={compact}
+            stageLarge={stageLarge}
+            disabled={disabled}
           />
         ))}
       </View>
 
       {/* Aggression */}
-      <Text style={[styles.sectionLabel, { marginTop: SPACE.md }]}>AGGRESSION</Text>
+      <Text style={[styles.sectionLabel, compact && styles.sectionLabelCompact, stageLarge && styles.sectionLabelLarge, { marginTop: compact ? SPACE.sm : SPACE.md }]}>AGGRESSION</Text>
       <View style={styles.aggRow}>
         {AGGRESSION_KEYS.map(key => (
           <AggBtn
@@ -112,6 +133,9 @@ export const ShotSelector = ({
             aggKey={key}
             selected={selectedAggression === key}
             onPress={onSelectAggression}
+            compact={compact}
+            stageLarge={stageLarge}
+            disabled={disabled}
           />
         ))}
       </View>
@@ -124,6 +148,18 @@ const styles = StyleSheet.create({
   container: {
     paddingHorizontal: SPACE.lg,
     marginBottom: SPACE.md,
+  },
+  containerCompact: {
+    paddingHorizontal: SPACE.md,
+    marginBottom: SPACE.sm,
+  },
+  sectionLabelCompact: {
+    marginBottom: 4,
+    paddingBottom: 2,
+    letterSpacing: 2,
+  },
+  btnDisabled: {
+    opacity: 0.45,
   },
   sectionLabel: {
     fontFamily: FONTS.mono,
@@ -153,6 +189,21 @@ const styles = StyleSheet.create({
     shadowColor: COLOURS.gold,
     shadowOffset: { width: 0, height: 3 },
   },
+  shotBtnCompact: {
+    paddingVertical: SPACE.xs,
+  },
+  shotBtnLarge: {
+    paddingVertical: SPACE.sm,
+  },
+  shotNameLarge: {
+    fontSize: SIZES.md,
+  },
+  containerLarge: {
+    paddingHorizontal: SPACE.lg,
+  },
+  sectionLabelLarge: {
+    fontSize: SIZES.sm,
+  },
   shotBtnSelected: {
     backgroundColor: COLOURS.gold,
     borderColor: COLOURS.goldLight,
@@ -164,12 +215,19 @@ const styles = StyleSheet.create({
     color: COLOURS.cream,
     marginBottom: 2,
   },
+  shotNameCompact: {
+    fontSize: SIZES.sm,
+    marginBottom: 0,
+  },
   shotNameSelected: { color: COLOURS.ink },
   shotDie: {
     fontFamily: FONTS.mono,
     fontSize: SIZES.xs,
     color: COLOURS.gold,
     letterSpacing: 1,
+  },
+  shotDieCompact: {
+    fontSize: 8,
   },
   shotDieSelected: { color: COLOURS.ink, opacity: 0.72 },
   shotRisk: {
@@ -196,11 +254,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     shadowOffset: { width: 0, height: 3 },
   },
+  aggBtnCompact: {
+    paddingVertical: 6,
+  },
+  aggBtnLarge: {
+    paddingVertical: SPACE.sm,
+  },
   aggText: {
     fontFamily: FONTS.display,
     fontSize: SIZES.sm,
     letterSpacing: 1,
     color: COLOURS.cream,
+  },
+  aggTextCompact: {
+    fontSize: SIZES.xs,
+    letterSpacing: 0.5,
   },
   aggSubtext: {
     fontFamily: FONTS.mono,

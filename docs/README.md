@@ -19,6 +19,7 @@
 ## 🏏 Gameplay
 - [Rules](./gameplay/rules.md)
 - [Match Logic](./gameplay/match-logic.md)
+- [Field Visualization](./gameplay/FIELD_VISUALIZATION.md)
 
 ## 🎙 Content
 - [Teams & Players](./content/teams-and-players.md)

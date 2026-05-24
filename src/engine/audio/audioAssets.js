@@ -16,8 +16,9 @@ export const SPEECH_PRIORITY = {
   analyst: 2,
   close: 2,
   outcome: 3,
+  innings_end: 3,
   wicket: 4,
-  milestone: 4,
+  milestone: 5,
   result: 5,
 };
 
@@ -484,7 +485,7 @@ export const POOL_PRIORITY = {
   loss: 'result',
   close: 'close',
   impossible: 'close',
-  first_innings_end: 'result',
+  first_innings_end: 'innings_end',
   easy_chase: 'result',
   balanced_chase: 'result',
   tough_chase: 'result',

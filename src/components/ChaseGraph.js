@@ -3,7 +3,7 @@
 // ═══════════════════════════════════════════════════════
 
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, useWindowDimensions } from 'react-native';
 import Svg, {
   Polyline,
   Line,
@@ -13,8 +13,11 @@ import Svg, {
 } from 'react-native-svg';
 import { COLOURS, FONTS, SIZES, SPACE } from '../constants/theme';
 
-const DEFAULT_WIDTH = Math.min(Dimensions.get('window').width - SPACE.lg * 2, 360);
-const CHART_HEIGHT = 168;
+const TABLET_MIN_EDGE = 768;
+const PHONE_MAX_WIDTH = 360;
+const TABLET_MAX_WIDTH = 620;
+const PHONE_CHART_HEIGHT = 168;
+const TABLET_CHART_HEIGHT = 216;
 const PAD_L = 40;
 const PAD_R = 12;
 const PAD_T = 22;
@@ -37,9 +40,16 @@ export const ChaseGraph = ({
   label2 = '2nd innings',
   emptyHint = null,
 }) => {
-  const width = DEFAULT_WIDTH;
-  const plotW = width - PAD_L - PAD_R;
-  const plotH = CHART_HEIGHT - PAD_T - PAD_B;
+  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
+  const shortestEdge = Math.min(windowWidth, windowHeight);
+  const isTablet = shortestEdge >= TABLET_MIN_EDGE;
+  const chartWidth = Math.min(
+    Math.max(240, windowWidth - SPACE.lg * 2),
+    isTablet ? TABLET_MAX_WIDTH : PHONE_MAX_WIDTH,
+  );
+  const chartHeight = isTablet ? TABLET_CHART_HEIGHT : PHONE_CHART_HEIGHT;
+  const plotW = chartWidth - PAD_L - PAD_R;
+  const plotH = chartHeight - PAD_T - PAD_B;
 
   const { paths, wicketDots, targetY } = useMemo(() => {
     const s1 = Array.isArray(series1) ? series1 : [];
@@ -87,7 +97,7 @@ export const ChaseGraph = ({
       wicketDots: wkts,
       targetY: ty,
     };
-  }, [series1, series2, target, maxBalls]);
+  }, [series1, series2, target, maxBalls, plotW, plotH]);
 
   const s1 = Array.isArray(series1) ? series1 : [];
   const s2 = Array.isArray(series2) ? series2 : [];
@@ -109,106 +119,108 @@ export const ChaseGraph = ({
       <Text style={styles.title}>CHASE GRAPH</Text>
       <Text style={styles.sub}>Cumulative runs by ball</Text>
 
-      <Svg width={width} height={CHART_HEIGHT}>
-        <Line
-          x1={PAD_L}
-          y1={PAD_T + plotH}
-          x2={PAD_L + plotW}
-          y2={PAD_T + plotH}
-          stroke={COLOURS.dot}
-          strokeOpacity={0.35}
-          strokeWidth={1}
-        />
-        <Line
-          x1={PAD_L}
-          y1={PAD_T}
-          x2={PAD_L}
-          y2={PAD_T + plotH}
-          stroke={COLOURS.dot}
-          strokeOpacity={0.35}
-          strokeWidth={1}
-        />
-
-        {targetY != null && (
-          <G>
-            <Line
-              x1={PAD_L}
-              y1={targetY}
-              x2={PAD_L + plotW}
-              y2={targetY}
-              stroke={COLOURS.gold}
-              strokeWidth={1.5}
-              strokeDasharray="6 4"
-            />
-            <SvgText
-              x={PAD_L + plotW - 4}
-              y={targetY - 4}
-              fill={COLOURS.gold}
-              fontSize={9}
-              fontFamily={FONTS.mono}
-              textAnchor="end"
-            >
-              TARGET {target}
-            </SvgText>
-          </G>
-        )}
-
-        {paths.p1.length > 0 && (
-          <Polyline
-            points={paths.p1}
-            fill="none"
-            stroke={COLOURS.runs1}
-            strokeWidth={2}
-            strokeLinejoin="round"
-            strokeLinecap="round"
-          />
-        )}
-        {paths.p2.length > 0 && (
-          <Polyline
-            points={paths.p2}
-            fill="none"
-            stroke={COLOURS.runs2}
-            strokeWidth={2}
-            strokeLinejoin="round"
-            strokeLinecap="round"
-          />
-        )}
-
-        {wicketDots.map((w, i) => (
-          <Circle
-            key={`w-${i}`}
-            cx={w.cx}
-            cy={w.cy}
-            r={3}
-            fill={COLOURS.wicket}
-            stroke={COLOURS.ink}
+      <View style={styles.chartSlot}>
+        <Svg width={chartWidth} height={chartHeight}>
+          <Line
+            x1={PAD_L}
+            y1={PAD_T + plotH}
+            x2={PAD_L + plotW}
+            y2={PAD_T + plotH}
+            stroke={COLOURS.dot}
+            strokeOpacity={0.35}
             strokeWidth={1}
           />
-        ))}
+          <Line
+            x1={PAD_L}
+            y1={PAD_T}
+            x2={PAD_L}
+            y2={PAD_T + plotH}
+            stroke={COLOURS.dot}
+            strokeOpacity={0.35}
+            strokeWidth={1}
+          />
 
-        <SvgText
-          x={PAD_L + plotW}
-          y={CHART_HEIGHT - 6}
-          fill={COLOURS.dot}
-          fontSize={9}
-          fontFamily={FONTS.mono}
-          textAnchor="end"
-        >
-          Ball →
-        </SvgText>
-        <SvgText
-          x={4}
-          y={PAD_T + 10}
-          fill={COLOURS.dot}
-          fontSize={9}
-          fontFamily={FONTS.mono}
-          textAnchor="start"
-        >
-          Runs
-        </SvgText>
-      </Svg>
+          {targetY != null && (
+            <G>
+              <Line
+                x1={PAD_L}
+                y1={targetY}
+                x2={PAD_L + plotW}
+                y2={targetY}
+                stroke={COLOURS.gold}
+                strokeWidth={1.5}
+                strokeDasharray="6 4"
+              />
+              <SvgText
+                x={PAD_L + plotW - 4}
+                y={targetY - 4}
+                fill={COLOURS.gold}
+                fontSize={9}
+                fontFamily={FONTS.mono}
+                textAnchor="end"
+              >
+                TARGET {target}
+              </SvgText>
+            </G>
+          )}
 
-      <View style={styles.legend}>
+          {paths.p1.length > 0 && (
+            <Polyline
+              points={paths.p1}
+              fill="none"
+              stroke={COLOURS.runs1}
+              strokeWidth={2}
+              strokeLinejoin="round"
+              strokeLinecap="round"
+            />
+          )}
+          {paths.p2.length > 0 && (
+            <Polyline
+              points={paths.p2}
+              fill="none"
+              stroke={COLOURS.runs2}
+              strokeWidth={2}
+              strokeLinejoin="round"
+              strokeLinecap="round"
+            />
+          )}
+
+          {wicketDots.map((w, i) => (
+            <Circle
+              key={`w-${i}`}
+              cx={w.cx}
+              cy={w.cy}
+              r={3}
+              fill={COLOURS.wicket}
+              stroke={COLOURS.ink}
+              strokeWidth={1}
+            />
+          ))}
+
+          <SvgText
+            x={PAD_L + plotW}
+            y={chartHeight - 6}
+            fill={COLOURS.dot}
+            fontSize={9}
+            fontFamily={FONTS.mono}
+            textAnchor="end"
+          >
+            Ball →
+          </SvgText>
+          <SvgText
+            x={4}
+            y={PAD_T + 10}
+            fill={COLOURS.dot}
+            fontSize={9}
+            fontFamily={FONTS.mono}
+            textAnchor="start"
+          >
+            Runs
+          </SvgText>
+        </Svg>
+      </View>
+
+      <View style={[styles.legend, isTablet && styles.legendTablet]}>
         <View style={styles.legendRow}>
           <View style={[styles.swatch, { backgroundColor: COLOURS.runs1 }]} />
           <Text style={styles.legendText} numberOfLines={1}>{label1}</Text>
@@ -232,6 +244,11 @@ const styles = StyleSheet.create({
     paddingBottom: SPACE.sm,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255,255,255,0.08)',
+    width: '100%',
+  },
+  chartSlot: {
+    width: '100%',
+    alignItems: 'center',
   },
   title: {
     fontFamily: FONTS.display,
@@ -258,6 +275,9 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: SPACE.md,
     marginTop: SPACE.sm,
+  },
+  legendTablet: {
+    justifyContent: 'center',
   },
   legendRow: { flexDirection: 'row', alignItems: 'center', marginRight: SPACE.md },
   swatch: { width: 12, height: 3, marginRight: 6, borderRadius: 1, opacity: 0.72 },

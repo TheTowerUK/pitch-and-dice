@@ -9,24 +9,26 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { COLOURS, FONTS, SIZES, SPACE } from '../constants/theme';
 
-export const MomentumBar = ({ momentum, tier, pressureTier }) => {
+export const MomentumBar = ({ momentum, tier, pressureTier, compact = false, stageLarge = false }) => {
   const normalised = Math.max(0, Math.min(1, (momentum + 10) / 20));
   const fillWidth = `${Math.round(normalised * 100)}%`;
   const pressureGlow = ['tense', 'desperate', 'impossible'].includes(pressureTier?.key);
 
   return (
-    <View style={[styles.container, { backgroundColor: tier.bgColour }]}>
+    <View style={[styles.container, compact && styles.containerCompact, stageLarge && styles.containerLarge, { backgroundColor: tier.bgColour }]}>
 
       {/* Top row — tier label + momentum value */}
-      <View style={styles.topRow}>
-        <Text style={[styles.tierLabel, { color: tier.colour }]}>
+      <View style={[styles.topRow, compact && styles.topRowCompact, stageLarge && styles.topRowLarge]}>
+        <Text style={[styles.tierLabel, compact && styles.tierLabelCompact, stageLarge && styles.tierLabelLarge, { color: tier.colour }]}>
           {tier.label}
         </Text>
         <View style={styles.rightRow}>
-          <Text style={styles.effectText} numberOfLines={1}>
-            {tier.effect}
-          </Text>
-          <Text style={[styles.momentumVal, { color: tier.colour }]}>
+          {!compact && (
+            <Text style={styles.effectText} numberOfLines={1}>
+              {tier.effect}
+            </Text>
+          )}
+          <Text style={[styles.momentumVal, compact && styles.momentumValCompact, stageLarge && styles.momentumValLarge, { color: tier.colour }]}>
             {momentum > 0 ? `+${momentum}` : momentum}
           </Text>
         </View>
@@ -49,13 +51,15 @@ export const MomentumBar = ({ momentum, tier, pressureTier }) => {
       </View>
 
       {/* Scale labels */}
-      <View style={styles.scaleRow}>
-        <Text style={styles.scaleLabel}>-10</Text>
-        <Text style={styles.scaleLabel}>CRUMBLING</Text>
-        <Text style={styles.scaleLabelCentre}>NEUTRAL</Text>
-        <Text style={styles.scaleLabel}>IN THE ZONE</Text>
-        <Text style={styles.scaleLabel}>+10</Text>
-      </View>
+      {!compact && (
+        <View style={styles.scaleRow}>
+          <Text style={styles.scaleLabel}>-10</Text>
+          <Text style={styles.scaleLabel}>CRUMBLING</Text>
+          <Text style={styles.scaleLabelCentre}>NEUTRAL</Text>
+          <Text style={styles.scaleLabel}>IN THE ZONE</Text>
+          <Text style={styles.scaleLabel}>+10</Text>
+        </View>
+      )}
 
     </View>
   );
@@ -67,6 +71,34 @@ const styles = StyleSheet.create({
     paddingVertical:   SPACE.sm,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255,255,255,0.07)',
+  },
+  containerCompact: {
+    paddingVertical: SPACE.xs,
+  },
+  containerLarge: {
+    paddingHorizontal: SPACE.xl,
+    paddingVertical: SPACE.sm,
+  },
+  topRowLarge: {
+    marginBottom: SPACE.xs,
+  },
+  tierLabelLarge: {
+    fontSize: SIZES.xl,
+  },
+  momentumValLarge: {
+    fontSize: 28,
+    minWidth: 36,
+  },
+  topRowCompact: {
+    marginBottom: 2,
+  },
+  tierLabelCompact: {
+    fontSize: SIZES.md,
+    letterSpacing: 2,
+  },
+  momentumValCompact: {
+    fontSize: SIZES.lg,
+    minWidth: 28,
   },
   topRow: {
     flexDirection:  'row',

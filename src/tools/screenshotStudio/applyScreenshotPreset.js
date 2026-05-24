@@ -3,7 +3,7 @@ import { DEFAULT_BATSMAN, DEFAULT_BOWLER } from '../../engine/playerEngine';
 import { DEFAULT_FIELD } from '../../engine/fieldEngine';
 import { makeSquadState, setBowler } from '../../engine/teamEngine';
 import { GAME_TEAMS } from '../../engine/teamsData';
-import { ENABLE_SCREENSHOT_STUDIO, getScreenshotPreset } from './screenshotPresets';
+import { ENABLE_SCREENSHOT_STUDIO, getScreenshotPreset, buildPresetLastOutcome } from './screenshotPresets';
 
 const DISMISSALS = ['CAUGHT', 'BOWLED', 'RUN OUT', 'LBW', 'CAUGHT SLIP', 'STUMPED'];
 
@@ -122,6 +122,98 @@ const buildBowlingSquad = (team, preset) => {
   };
 };
 
+const applyScorecardScenario = (battingSquad, bowlingSquad, scenario) => {
+  if (!scenario) return { battingSquad, bowlingSquad };
+
+  const battingEntries = Array.isArray(scenario.batting) ? scenario.batting : [];
+  const bowlingEntries = Array.isArray(scenario.bowling) ? scenario.bowling : [];
+
+  const battingByIndex = new Map(battingEntries.map((entry) => [entry.index, entry]));
+  const bowlingByIndex = new Map(bowlingEntries.map((entry) => [entry.index, entry]));
+
+  const players = battingSquad.players.map((player, index) => {
+    const mock = battingByIndex.get(index);
+    return mock?.name ? { ...player, name: mock.name } : player;
+  });
+
+  const scorecard = battingSquad.scorecard.map((entry, index) => {
+    const mock = battingByIndex.get(index);
+    if (!mock) {
+      return {
+        ...entry,
+        name: players[index]?.name || entry.name,
+        runs: 0,
+        balls: 0,
+        fours: 0,
+        sixes: 0,
+        dismissal: null,
+        batting: false,
+        batted: false,
+      };
+    }
+
+    const batting = !!mock.batting;
+    const dismissed = !!mock.dismissal;
+    return {
+      ...entry,
+      name: mock.name || players[index]?.name || entry.name,
+      runs: mock.runs ?? 0,
+      balls: mock.balls ?? 0,
+      fours: mock.fours ?? Math.floor((mock.runs ?? 0) / 18),
+      sixes: mock.sixes ?? Math.floor((mock.runs ?? 0) / 40),
+      dismissal: mock.dismissal ?? null,
+      batting,
+      batted: batting || dismissed || (mock.runs ?? 0) > 0,
+    };
+  });
+
+  const currentBatsmen = battingEntries
+    .filter((entry) => entry.batting)
+    .map((entry) => entry.index)
+    .filter((index) => Number.isInteger(index));
+
+  const bowlingPlayers = bowlingSquad.players.map((player, index) => {
+    const mock = bowlingByIndex.get(index);
+    return mock?.name ? { ...player, name: mock.name } : player;
+  });
+
+  const oversBowled = { ...bowlingSquad.oversBowled };
+  const runsConceded = { ...bowlingSquad.runsConceded };
+  const wicketsTaken = { ...bowlingSquad.wicketsTaken };
+
+  bowlingEntries.forEach((mock) => {
+    const player = bowlingPlayers[mock.index];
+    if (!player?.id) return;
+    oversBowled[player.id] = mock.overs ?? 0;
+    runsConceded[player.id] = mock.runs ?? 0;
+    wicketsTaken[player.id] = mock.wickets ?? 0;
+  });
+
+  const nextBatsmanIdx = currentBatsmen.length
+    ? Math.min(10, Math.max(...currentBatsmen) + 1)
+    : battingSquad.nextBatsmanIdx;
+
+  const currentBowlerIdx = scenario.currentBowlerIdx ?? bowlingSquad.currentBowlerIdx ?? 7;
+
+  return {
+    battingSquad: {
+      ...battingSquad,
+      players,
+      scorecard,
+      currentBatsmen,
+      nextBatsmanIdx,
+    },
+    bowlingSquad: {
+      ...bowlingSquad,
+      players: bowlingPlayers,
+      oversBowled,
+      runsConceded,
+      wicketsTaken,
+      currentBowlerIdx,
+    },
+  };
+};
+
 const getTeams = (preset) => {
   const [battingId, bowlingId] = preset.pairing || [];
   const fallbackTeams = Object.values(GAME_TEAMS);
@@ -188,8 +280,16 @@ export const applyScreenshotPreset = (baseState, presetId) => {
   const { battingTeam, bowlingTeam } = getTeams(preset);
   const format = preset.format || baseState.format || 'T20';
   const maxBalls = (FORMATS[format]?.overs || 20) * 6;
-  const battingSquad = buildBattingSquad(battingTeam, preset);
-  const bowlingSquad = buildBowlingSquad(bowlingTeam, preset);
+  let battingSquad = buildBattingSquad(battingTeam, preset);
+  let bowlingSquad = buildBowlingSquad(bowlingTeam, preset);
+
+  if (preset.scorecardScenario) {
+  ({ battingSquad, bowlingSquad } = applyScorecardScenario(
+      battingSquad,
+      bowlingSquad,
+      preset.scorecardScenario,
+    ));
+  }
   const strikerIdx = battingSquad.currentBatsmen[0] ?? 0;
   const nonStrikerIdx = battingSquad.currentBatsmen[1] ?? strikerIdx;
   const bowlerIdx = bowlingSquad.currentBowlerIdx ?? 7;
@@ -233,11 +333,21 @@ export const applyScreenshotPreset = (baseState, presetId) => {
       ? preset.overBalls.slice(0, 6)
       : buildRecentBalls(preset.runs || 0, preset.wickets || 0).slice(0, (preset.balls || 0) % 6),
     recentBalls: buildRecentBalls(preset.runs || 0, preset.wickets || 0),
-    commentary: [
-      { ball: 'CAPTURE MODE', text: `${battingTeam.name} ${preset.runs}/${preset.wickets} after ${formatOvers(preset.balls || 0)}.`, style: 'normal' },
-    ],
+    commentary: preset.scorecardCaptureMeta
+      ? [
+        {
+          ball: 'CHASE',
+          text: `${battingTeam.name} ${preset.runs}/${preset.wickets} — need ${preset.scorecardCaptureMeta.needRuns} from ${preset.scorecardCaptureMeta.needBalls} (RRR ${Number(preset.scorecardCaptureMeta.reqRunRate).toFixed(2)}).`,
+          style: 'momentum',
+        },
+      ]
+      : [
+        { ball: 'CAPTURE MODE', text: `${battingTeam.name} ${preset.runs}/${preset.wickets} after ${formatOvers(preset.balls || 0)}.`, style: 'normal' },
+      ],
     field: { ...DEFAULT_FIELD },
-    partnership: makePartnership(Math.min(54, Math.max(12, Math.floor((preset.runs || 0) / 3))), Math.max(8, Math.floor((preset.balls || 1) / 4))),
+    partnership: preset.partnership
+      ? makePartnership(preset.partnership.runs, preset.partnership.balls)
+      : makePartnership(Math.min(54, Math.max(12, Math.floor((preset.runs || 0) / 3))), Math.max(8, Math.floor((preset.balls || 1) / 4))),
     freeHit: false,
     drsReviews: 1,
     pendingMilestone: preset.pendingMilestone || null,
@@ -269,8 +379,11 @@ export const applyScreenshotPreset = (baseState, presetId) => {
     strikerIndex: legacyStrikerIndex,
     nonStrikerIndex: battingSquad.currentBatsmen.length > 1 ? legacyNonStrikerIndex : legacyStrikerIndex,
     nextBatterNumber: Math.min(11, (preset.wickets || 0) + 3),
-    currentPartnershipRuns: Math.min(54, Math.max(8, Math.floor((preset.runs || 0) / 4))),
-    currentPartnershipBalls: Math.max(6, Math.floor((preset.balls || 1) / 5)),
+    currentPartnershipRuns: preset.partnership?.runs
+      ?? Math.min(54, Math.max(8, Math.floor((preset.runs || 0) / 4))),
+    currentPartnershipBalls: preset.partnership?.balls
+      ?? Math.max(6, Math.floor((preset.balls || 1) / 5)),
+    scorecardCaptureMeta: preset.scorecardCaptureMeta || null,
     lastStrikeChangeReason: 'capture_mode',
     currentBatter: legacyBatters[legacyStrikerIndex] || {
       number: 1,
@@ -279,7 +392,7 @@ export const applyScreenshotPreset = (baseState, presetId) => {
       balls: battingSquad.scorecard[strikerIdx]?.balls || 0,
       out: false,
     },
-    lastOutcome: preset.lastOutcome || null,
+    lastOutcome: buildPresetLastOutcome(preset),
     lastWicket: preset.lastWicket || null,
     pendingEvent: preset.pendingEvent || null,
     lastSpecialEventType: preset.pendingEvent?.key || null,

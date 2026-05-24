@@ -9,6 +9,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, Animated, StyleSheet } from 'react-native';
 import { playSoundForRoll } from '../engine/soundEngine';
 import { COLOURS, FONTS, SIZES, SPACE } from '../constants/theme';
+import { DiceValueDisplay } from './DiceValueDisplay';
 
 // ─────────────────────────────────────────
 //  ANIMATION TIMING
@@ -27,6 +28,8 @@ export const DiceRollAnimation = ({
   dieLabel,   // 'D6', 'D8' etc
   shotLabel,  // 'WORK', 'DRIVE' etc
   onComplete, // called when animation finishes
+  compact = false,
+  stagePanel = false,
 }) => {
   const [displayNum, setDisplayNum]   = useState(1);
   const [phase, setPhase]             = useState('idle'); // idle | rolling | landed
@@ -105,39 +108,78 @@ export const DiceRollAnimation = ({
     };
   }, [visible, finalRoll, sides]);
 
-  if (!visible && phase === 'idle') return null;
+  if (!visible && phase === 'idle') {
+    if (compact && stagePanel) {
+      return <View style={styles.stagePanelPlaceholder} />;
+    }
+    return null;
+  }
 
   const isLanded    = phase === 'landed';
   const numberColor = isLanded ? COLOURS.gold : COLOURS.cream;
 
-  return (
-    <Animated.View style={[styles.container, { opacity: opacAnim }]}>
-      {/* Shot context label */}
-      <Text style={styles.shotLabel}>{shotLabel}</Text>
+  const useStagePanel = compact && stagePanel;
 
-      {/* Die container */}
-      <View style={styles.dieWrapper}>
+  if (useStagePanel) {
+    return (
+      <Animated.View style={[styles.containerStagePanel, { opacity: opacAnim }]}>
+        <View style={styles.stageTop}>
+          <Text style={styles.shotLabelStagePanel}>{shotLabel}</Text>
+        </View>
+        <View style={styles.stageMiddle}>
+          {!isLanded && (
+            <Text style={styles.rollingTextStage}>ROLLING...</Text>
+          )}
+        </View>
+        <View style={styles.stageBottom}>
+          <DiceValueDisplay
+            value={displayNum}
+            showRolledLabel={isLanded}
+            numberColor={numberColor}
+            scaleAnim={scaleAnim}
+          />
+        </View>
+      </Animated.View>
+    );
+  }
+
+  return (
+    <Animated.View style={[
+      styles.container,
+      compact && styles.containerCompact,
+      { opacity: opacAnim },
+    ]}>
+      <Text style={[styles.shotLabel, compact && styles.shotLabelCompact]}>
+        {shotLabel}
+      </Text>
+
+      <View style={[styles.dieWrapper, compact && styles.dieWrapperCompact]}>
         <Animated.View style={[
           styles.dieFace,
+          compact && styles.dieFaceCompact,
           isLanded && styles.dieFaceLanded,
           { transform: [{ scale: scaleAnim }] },
         ]}>
           <Animated.View style={[
             styles.glow,
+            compact && styles.glowCompact,
             { opacity: glowAnim },
           ]} />
-          <Text style={[styles.dieNum, { color: numberColor }]}>
-            {displayNum}
-          </Text>
+          <View style={styles.dieNumWrap}>
+            <Text style={[
+              styles.dieNum,
+              compact && styles.dieNumCompact,
+              { color: numberColor },
+            ]}>
+              {displayNum}
+            </Text>
+          </View>
         </Animated.View>
       </View>
 
-      {/* Die label */}
       <Text style={[styles.dieLabel, isLanded && { color: COLOURS.gold }]}>
         {isLanded ? `ROLLED ${dieLabel}` : dieLabel}
       </Text>
-
-      {/* Rolling indicator */}
       {!isLanded && (
         <Text style={styles.rollingText}>ROLLING...</Text>
       )}
@@ -152,6 +194,49 @@ const styles = StyleSheet.create({
     marginHorizontal: SPACE.lg,
     marginBottom:    SPACE.md,
   },
+  containerCompact: {
+    paddingVertical: SPACE.xs,
+    marginHorizontal: 0,
+    marginBottom: 0,
+    width: '100%',
+  },
+  stagePanelPlaceholder: {
+    flex: 1,
+    width: '100%',
+  },
+  containerStagePanel: {
+    flex: 1,
+    width: '100%',
+    paddingHorizontal: SPACE.sm,
+    paddingVertical: SPACE.sm,
+  },
+  stageTop: {
+    flex: 33,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingBottom: SPACE.xs,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'rgba(255,255,255,0.08)',
+  },
+  stageMiddle: {
+    flex: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  stageBottom: {
+    flex: 39,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: SPACE.sm,
+  },
+  rollingTextStage: {
+    fontFamily: FONTS.mono,
+    fontSize: SIZES.sm,
+    color: COLOURS.gold,
+    letterSpacing: 4,
+    opacity: 0.7,
+    textAlign: 'center',
+  },
   shotLabel: {
     fontFamily:    FONTS.mono,
     fontSize:      SIZES.xs,
@@ -159,10 +244,24 @@ const styles = StyleSheet.create({
     letterSpacing: 4,
     marginBottom:  SPACE.lg,
   },
+  shotLabelCompact: {
+    marginBottom: SPACE.xs,
+    letterSpacing: 2,
+  },
+  shotLabelStagePanel: {
+    marginBottom: 0,
+    letterSpacing: 3,
+    fontSize: SIZES.xs,
+    color: COLOURS.dot,
+    opacity: 0.85,
+  },
   dieWrapper: {
     alignItems:     'center',
     justifyContent: 'center',
     marginBottom:   SPACE.md,
+  },
+  dieWrapperCompact: {
+    marginBottom: SPACE.xs,
   },
   dieFace: {
     width:           120,
@@ -175,6 +274,22 @@ const styles = StyleSheet.create({
     justifyContent:  'center',
     overflow:        'hidden',
   },
+  dieFaceCompact: {
+    width: 88,
+    height: 88,
+    borderRadius: 12,
+  },
+  glowCompact: {
+    borderRadius: 10,
+  },
+  dieNumWrap: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dieNumWrapStage: {
+    flexDirection: 'column',
+  },
   dieFaceLanded: {
     borderColor:     COLOURS.gold,
     backgroundColor: 'rgba(212,160,23,0.08)',
@@ -186,10 +301,16 @@ const styles = StyleSheet.create({
     borderRadius:    14,
   },
   dieNum: {
-    fontFamily:   FONTS.display,
-    fontSize:     72,
-    lineHeight:   80,
+    fontFamily: FONTS.display,
+    fontSize: 72,
+    lineHeight: 72,
     letterSpacing: 0,
+    textAlign: 'center',
+    includeFontPadding: false,
+  },
+  dieNumCompact: {
+    fontSize: 48,
+    lineHeight: 48,
   },
   dieLabel: {
     fontFamily:    FONTS.mono,

@@ -7,6 +7,18 @@ Current Active Phase: Phase 5 — Polish
 **Platform:** iOS + Android (React Native via Expo SDK 54)
 **Status:** Phases 1–4 complete + audio/polish in progress. Phase 5 = store prep.
 
+## Store identifiers
+
+**iOS:**  
+`bundleIdentifier` = `com.pitchanddice.app`  
+(Existing App Store / TestFlight identity — do not change)
+
+**Android:**  
+`package` = `com.thetoweruk.pitchanddice`  
+(Google Play identity)
+
+These are intentionally different and should not be automatically aligned.
+
 ## 2. TECH STACK
 - React Native + Expo ~54.0.0, React 19.1.0, RN 0.81.5, JavaScript ES6+
 - expo-av (audio), expo-haptics, @react-native-async-storage, react-native-safe-area-context ~5.6.0

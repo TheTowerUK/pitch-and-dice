@@ -24,11 +24,11 @@ const PIP_LABEL = {
   three: '3', four: '4', six: '6', wicket: 'W',
 };
 
-const Pip = ({ ballResult }) => {
+const Pip = ({ ballResult, compact, stageLarge }) => {
   const pipStyle = getBallPipStyle(ballResult);
   const { bg, text } = PIP_COLOURS[pipStyle];
   return (
-    <View style={[styles.pip, { backgroundColor: bg }]}>
+    <View style={[styles.pip, compact && styles.pipCompact, stageLarge && styles.pipLarge, { backgroundColor: bg }]}>
       <Text style={[styles.pipText, { color: text }]}>
         {PIP_LABEL[pipStyle]}
       </Text>
@@ -36,17 +36,20 @@ const Pip = ({ ballResult }) => {
   );
 };
 
-export const OverBalls = ({ overBalls }) => {
+export const OverBalls = ({ overBalls, compact = false, stageLarge = false }) => {
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, compact && styles.containerCompact, stageLarge && styles.containerLarge]}>
       {[0, 1, 2, 3, 4, 5].map(i => (
-        <Pip key={i} ballResult={overBalls[i] || null} />
+        <Pip key={i} ballResult={overBalls[i] || null} compact={compact} stageLarge={stageLarge} />
       ))}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  containerCompact: {
+    paddingVertical: SPACE.xs,
+  },
   container: {
     flexDirection: 'row',
     gap: SPACE.xs,
@@ -56,6 +59,21 @@ const styles = StyleSheet.create({
     backgroundColor: COLOURS.ink,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255,255,255,0.06)',
+  },
+  pipCompact: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+  },
+  containerLarge: {
+    paddingVertical: SPACE.sm,
+    paddingHorizontal: SPACE.xl,
+    gap: SPACE.sm,
+  },
+  pipLarge: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
   },
   pip: {
     width: 32,

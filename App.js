@@ -11,7 +11,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 enableScreens();
 
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, AppState } from 'react-native';
+import { View, StyleSheet, AppState } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useFonts, BebasNeue_400Regular } from '@expo-google-fonts/bebas-neue';
 import { DMMono_400Regular, DMMono_500Medium } from '@expo-google-fonts/dm-mono';
@@ -161,15 +161,8 @@ export default function App() {
       <SafeAreaProvider>
         <StatusBar style="light" />
 
-        {/* Loading state — fonts, storage, or sounds not yet complete */}
-        {(!fontsLoaded || !checked || !soundsReady) && (
-          <View style={styles.loading}>
-            <Text style={styles.loadingText}>PITCH & DICE</Text>
-          </View>
-        )}
-
-        {/* Home screen */}
-        {fontsLoaded && checked && soundsReady && screen === 'home' && (
+        {/* Home — show as soon as fonts + save check complete; audio loads in background */}
+        {fontsLoaded && checked && screen === 'home' && (
           <HomeScreen
             hasResumableMatch={!!resumableMatch}
             resumableMatch={resumableMatch}
@@ -228,17 +221,6 @@ export default function App() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-  },
-  loading: {
-    flex:            1,
     backgroundColor: COLOURS.ink,
-    alignItems:      'center',
-    justifyContent:  'center',
-  },
-  loadingText: {
-    fontSize:      32,
-    letterSpacing: 6,
-    color:         COLOURS.gold,
-    fontWeight:    'bold',
   },
 });

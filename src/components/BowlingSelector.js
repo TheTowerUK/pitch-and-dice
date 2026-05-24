@@ -9,13 +9,20 @@ import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-nati
 import { COLOURS, FONTS, SIZES, SPACE } from '../constants/theme';
 import { BOWLING_KEYS, BOWLING_VARIATIONS } from '../engine/bowlingEngine';
 
-const BowlingBtn = ({ variationKey, selected, onPress }) => {
+const BowlingBtn = ({ variationKey, selected, onPress, compact, stageLarge, disabled }) => {
   const cfg = BOWLING_VARIATIONS[variationKey];
   return (
     <TouchableOpacity
-      style={[styles.btn, selected && { backgroundColor: cfg.colour, borderColor: cfg.colour }]}
+      style={[
+        styles.btn,
+        compact && styles.btnCompact,
+        stageLarge && styles.btnLarge,
+        selected && { backgroundColor: cfg.colour, borderColor: cfg.colour },
+        disabled && styles.btnDisabled,
+      ]}
       onPress={() => onPress(variationKey)}
       activeOpacity={0.7}
+      disabled={disabled}
     >
       <Text style={[styles.btnLabel, selected && styles.btnLabelSelected]}>
         {cfg.label}
@@ -23,16 +30,18 @@ const BowlingBtn = ({ variationKey, selected, onPress }) => {
       <Text style={[styles.btnShort, selected && styles.btnShortSelected, { color: selected ? COLOURS.white : cfg.colour }]}>
         {cfg.shortLabel}
       </Text>
-      <Text style={[styles.btnDesc, selected && styles.btnDescSelected]} numberOfLines={1}>
-        {cfg.description}
-      </Text>
+      {!compact && (
+        <Text style={[styles.btnDesc, selected && styles.btnDescSelected]} numberOfLines={1}>
+          {cfg.description}
+        </Text>
+      )}
     </TouchableOpacity>
   );
 };
 
-export const BowlingSelector = ({ selectedBowling, onSelectBowling }) => (
-  <View style={styles.container}>
-    <Text style={styles.sectionLabel}>BOWLING VARIATION</Text>
+export const BowlingSelector = ({ selectedBowling, onSelectBowling, compact = false, stageLarge = false, disabled = false }) => (
+  <View style={[styles.container, compact && styles.containerCompact, stageLarge && styles.containerLarge]}>
+    <Text style={[styles.sectionLabel, compact && styles.sectionLabelCompact, stageLarge && styles.sectionLabelLarge]}>BOWLING VARIATION</Text>
     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.scroll}>
       {BOWLING_KEYS.map(key => (
         <BowlingBtn
@@ -40,6 +49,9 @@ export const BowlingSelector = ({ selectedBowling, onSelectBowling }) => (
           variationKey={key}
           selected={selectedBowling === key}
           onPress={onSelectBowling}
+          compact={compact}
+          stageLarge={stageLarge}
+          disabled={disabled}
         />
       ))}
     </ScrollView>
@@ -50,6 +62,18 @@ const styles = StyleSheet.create({
   container: {
     paddingHorizontal: SPACE.lg,
     marginBottom:      SPACE.md,
+  },
+  containerCompact: {
+    paddingHorizontal: SPACE.md,
+    marginBottom: SPACE.sm,
+  },
+  sectionLabelCompact: {
+    marginBottom: 4,
+    paddingBottom: 2,
+    letterSpacing: 2,
+  },
+  btnDisabled: {
+    opacity: 0.45,
   },
   sectionLabel: {
     fontFamily:   FONTS.mono,
@@ -72,6 +96,23 @@ const styles = StyleSheet.create({
     marginRight:     SPACE.sm,
     minWidth:        90,
     maxWidth:        110,
+  },
+  btnCompact: {
+    minWidth: 72,
+    maxWidth: 88,
+    paddingVertical: SPACE.xs,
+    paddingHorizontal: SPACE.sm,
+  },
+  btnLarge: {
+    minWidth: 84,
+    maxWidth: 100,
+    paddingVertical: SPACE.sm,
+  },
+  containerLarge: {
+    paddingHorizontal: SPACE.lg,
+  },
+  sectionLabelLarge: {
+    fontSize: SIZES.sm,
   },
   btnLabel: {
     fontFamily:   FONTS.display,

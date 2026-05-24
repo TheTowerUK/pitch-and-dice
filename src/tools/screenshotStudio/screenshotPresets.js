@@ -1,6 +1,43 @@
 export const ENABLE_SCREENSHOT_STUDIO = __DEV__;
 
+/**
+ * Build a staged lastOutcome for capture mode from dedicated outcomePanel mock data.
+ * @param {object|null|undefined} preset
+ * @returns {object|null}
+ */
+export const buildPresetLastOutcome = (preset) => {
+  if (!preset) return null;
+
+  const panel = preset.outcomePanel;
+  if (panel?.title && panel?.body != null && panel?.rolled != null) {
+    return {
+      type: panel.type || 'runs',
+      runs: panel.runs ?? 0,
+      label: panel.title,
+      detail: panel.body,
+      clampedRoll: panel.rolled,
+      dieLabel: panel.dieLabel || 'D6',
+    };
+  }
+
+  return preset.lastOutcome || null;
+};
+
 export const SCREENSHOT_PRESETS = [
+  {
+    id: 'ready_to_roll',
+    name: 'Ready To Roll',
+    description: 'Pre-roll outcome panel before the dice is thrown.',
+    pairing: ['northern_strikers', 'coastal_blaze'],
+    innings: 1,
+    runs: 42,
+    wickets: 1,
+    balls: 36,
+    momentum: 1,
+    selectedShot: 'drive',
+    selectedAggression: 'balanced',
+    selectedBowling: 'stock',
+  },
   {
     id: 'hero_gameplay',
     name: 'Hero Gameplay',
@@ -11,7 +48,13 @@ export const SCREENSHOT_PRESETS = [
     wickets: 2,
     balls: 58,
     momentum: 3,
-    lastOutcome: { type: 'four', runs: 4, label: 'FOUR!', detail: 'Threaded through cover with perfect timing.', clampedRoll: 5, dieLabel: 'D6' },
+    outcomePanel: {
+      type: 'runs',
+      runs: 2,
+      title: '2 RUNS',
+      body: 'Placed through the gap, two runs.',
+      rolled: 5,
+    },
   },
   {
     id: 'pressure_chase',
@@ -32,7 +75,13 @@ export const SCREENSHOT_PRESETS = [
       { type: 'dot', runs: 0 },
       { type: 'dot', runs: 0 },
     ],
-    lastOutcome: { type: 'dot', runs: 0, label: 'DOT BALL', detail: 'Beaten by a tight line outside off.', clampedRoll: 1, dieLabel: 'D6' },
+    outcomePanel: {
+      type: 'dot',
+      runs: 0,
+      title: 'DOT BALL',
+      body: 'Missed outside off, good leave.',
+      rolled: 1,
+    },
   },
   {
     id: 'massive_six',
@@ -51,7 +100,14 @@ export const SCREENSHOT_PRESETS = [
       { type: 'four', runs: 4 },
       { type: 'six', runs: 6 },
     ],
-    lastOutcome: { type: 'six', runs: 6, label: 'SIX!', detail: 'Launched high into the night sky and into the stands.', clampedRoll: 6, dieLabel: 'D6' },
+    outcomePanel: {
+      type: 'six',
+      runs: 6,
+      title: 'SIX!',
+      body: 'Swivelled and pulled it over the rope! Audacious.',
+      rolled: 9,
+      dieLabel: 'D10',
+    },
   },
   {
     id: 'wicket_moment',
@@ -64,7 +120,13 @@ export const SCREENSHOT_PRESETS = [
     balls: 64,
     momentum: -3,
     gamePhase: 'wicket_pending',
-    lastOutcome: { type: 'wicket', runs: 0, label: 'WICKET!', detail: 'Sharp edge flies low to slip.', clampedRoll: 1, dieLabel: 'D6' },
+    outcomePanel: {
+      type: 'wicket',
+      runs: 0,
+      title: 'WICKET!',
+      body: 'Sharp edge flies low to slip.',
+      rolled: 1,
+    },
     lastWicket: { type: 'CAUGHT SLIP', detail: 'Sharp edge flies low to slip.', roll: 5, drs: false },
   },
   {
@@ -79,7 +141,13 @@ export const SCREENSHOT_PRESETS = [
     momentum: 5,
     strikerRuns: 50,
     pendingMilestone: { runs: 50, batsmanName: 'Rylan Frost' },
-    lastOutcome: { type: 'runs', runs: 2, label: '2 RUNS', detail: 'Clipped neatly into the leg side to reach fifty.', clampedRoll: 4, dieLabel: 'D6' },
+    outcomePanel: {
+      type: 'runs',
+      runs: 2,
+      title: '2 RUNS',
+      body: 'Clipped neatly into the leg side to reach fifty.',
+      rolled: 4,
+    },
   },
   {
     id: 'match_win',
@@ -153,6 +221,13 @@ export const SCREENSHOT_PRESETS = [
       flavour: 'The ground staff sprint onto the field. Frustrating delay.',
       effect: { type: 'momentum', momentumDelta: -2, message: 'Weather delay — momentum cools slightly.' },
     },
+    outcomePanel: {
+      type: 'dot',
+      runs: 0,
+      title: 'DOT BALL',
+      body: 'Play halted as rain sweeps across the ground.',
+      rolled: 2,
+    },
   },
   {
     id: 'chase_graph',
@@ -192,7 +267,82 @@ export const SCREENSHOT_PRESETS = [
       { ball: 86, runs: 119, wickets: 4 },
       { ball: 92, runs: 132, wickets: 5 },
     ],
-    lastOutcome: { type: 'runs', runs: 1, label: '1 RUN', detail: 'Worked into the gap to keep the chase alive.', clampedRoll: 3, dieLabel: 'D6' },
+    outcomePanel: {
+      type: 'runs',
+      runs: 1,
+      title: '1 RUN',
+      body: 'Worked into the gap to keep the chase alive.',
+      rolled: 3,
+    },
+  },
+  {
+    id: 'scorecard_match_details',
+    name: 'Scorecard / Match Details',
+    description: 'Chase scorecard with top scorer, partnership, and target context.',
+    captureLabel: 'Track every run, wicket and partnership',
+    pairing: ['south_east_royals', 'west_midlands_falcons'],
+    format: 'T20',
+    innings: 2,
+    target: 157,
+    innings1Runs: 156,
+    innings1Wickets: 7,
+    innings1Balls: 120,
+    runs: 132,
+    wickets: 4,
+    balls: 98,
+    momentum: 5,
+    view: 'scorecard',
+    partnership: { runs: 52, balls: 34 },
+    scorecardCaptureMeta: {
+      tagline: 'Track every run, wicket and partnership',
+      target: 157,
+      needRuns: 25,
+      needBalls: 22,
+      reqRunRate: 6.82,
+      partnershipRuns: 52,
+      partnershipBalls: 34,
+    },
+    scorecardScenario: {
+      currentBowlerIdx: 8,
+      batting: [
+        { index: 0, name: 'Alden Pierce', runs: 8, balls: 7, dismissal: 'BOWLED' },
+        { index: 1, name: 'Keir Dalton', runs: 9, balls: 8, dismissal: 'CAUGHT' },
+        { index: 2, name: 'Merric Stone', runs: 12, balls: 10, dismissal: 'c keeper b Archer' },
+        { index: 3, name: 'Beck Brooks', runs: 4, balls: 3, dismissal: 'run out' },
+        { index: 4, name: 'Finn Yew', runs: 78, balls: 52, fours: 9, sixes: 3, batting: true },
+        { index: 5, name: 'Connor Wade', runs: 21, balls: 13, fours: 2, sixes: 0, batting: true },
+      ],
+      bowling: [
+        { index: 8, name: 'Leo Archer', overs: 3.2, runs: 24, wickets: 1 },
+        { index: 9, name: 'Saeed Malik', overs: 4, runs: 31, wickets: 2 },
+        { index: 10, name: 'Orrin Knox', overs: 4, runs: 38, wickets: 1 },
+        { index: 11, name: 'Pax Deller', overs: 5, runs: 39, wickets: 0 },
+      ],
+    },
+    innings1Series: [
+      { ball: 6, runs: 9, wickets: 0 },
+      { ball: 18, runs: 28, wickets: 0 },
+      { ball: 30, runs: 48, wickets: 1 },
+      { ball: 42, runs: 66, wickets: 2 },
+      { ball: 54, runs: 82, wickets: 2 },
+      { ball: 66, runs: 101, wickets: 3 },
+      { ball: 78, runs: 118, wickets: 4 },
+      { ball: 90, runs: 134, wickets: 5 },
+      { ball: 102, runs: 147, wickets: 6 },
+      { ball: 120, runs: 156, wickets: 7 },
+    ],
+    innings2Series: [
+      { ball: 6, runs: 8, wickets: 0 },
+      { ball: 12, runs: 17, wickets: 0 },
+      { ball: 24, runs: 33, wickets: 1 },
+      { ball: 36, runs: 49, wickets: 2 },
+      { ball: 48, runs: 61, wickets: 2 },
+      { ball: 60, runs: 78, wickets: 3 },
+      { ball: 72, runs: 94, wickets: 3 },
+      { ball: 84, runs: 112, wickets: 4 },
+      { ball: 90, runs: 121, wickets: 4 },
+      { ball: 98, runs: 132, wickets: 4 },
+    ],
   },
 ];
 

@@ -2,24 +2,24 @@
   "expo": {
     "name": "Pitch & Dice",
     "slug": "pitch-and-dice",
-    "version": "1.0.0",
+    "version": "1.0.2",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "icon": "./src/assets/icons/icon.png",
     "splash": {
-      "image": "./src/assets/splash.png",
-      "resizeMode": "contain",
       "backgroundColor": "#1a1a1a"
     },
     "ios": {
-      "supportsTablet": false,
+      "buildNumber": "11",
+      "supportsTablet": true,
       "bundleIdentifier": "com.pitchanddice.app",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
-      "package": "com.pitchanddice.app"
+      "package": "com.thetoweruk.pitchanddice",
+      "versionCode": 2
     },
     "plugins": [
       "expo-font"

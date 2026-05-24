@@ -16,7 +16,7 @@ import {
   getStrikeRate,
 } from '../engine/teamEngine';
 
-const BattingRow = ({ entry }) => {
+const BattingRow = ({ entry, highlightActive = false }) => {
   const sr = getStrikeRate(entry.runs, entry.balls);
   const suffix = entry.batting ? '*' : '';
   const outText = entry.dismissal
@@ -26,7 +26,7 @@ const BattingRow = ({ entry }) => {
       : '—';
 
   return (
-    <View style={styles.batRow}>
+    <View style={[styles.batRow, highlightActive && entry.batting && styles.batRowActive]}>
       <View style={styles.batNameCol}>
         <Text style={styles.batName} numberOfLines={1}>
           {entry.name.split(' ').pop() || entry.name}{suffix}
@@ -51,9 +51,11 @@ export const ScorecardScreen = ({
   chaseTarget = null,
   chaseLabel1 = null,
   chaseLabel2 = null,
+  captureMeta = null,
 }) => {
   const maxBalls = (FORMATS[formatKey]?.overs ?? 20) * 6;
   const showChaseGraph = !embedded;
+  const highlightActiveBatters = !!captureMeta;
   const batted = battingSquad ? getScorecardRows(battingSquad) : [];
   const ytb    = battingSquad ? getYetToBat(battingSquad)      : [];
 
@@ -95,6 +97,26 @@ export const ScorecardScreen = ({
           </Text>
           <Text style={styles.summaryOv} numberOfLines={1}>OV {overDisplay}</Text>
         </View>
+        {captureMeta && (
+          <View style={styles.captureMetaBlock}>
+            {captureMeta.target != null && (
+              <Text style={styles.captureMetaLine}>
+                Target {captureMeta.target}
+                {captureMeta.needRuns != null && captureMeta.needBalls != null
+                  ? ` · Need ${captureMeta.needRuns} from ${captureMeta.needBalls}`
+                  : ''}
+                {captureMeta.reqRunRate != null
+                  ? ` · RRR ${Number(captureMeta.reqRunRate).toFixed(2)}`
+                  : ''}
+              </Text>
+            )}
+            {captureMeta.partnershipRuns != null && captureMeta.partnershipBalls != null && (
+              <Text style={styles.captureMetaPartnership}>
+                Partnership {captureMeta.partnershipRuns} ({captureMeta.partnershipBalls})
+              </Text>
+            )}
+          </View>
+        )}
       </View>
 
       {showChaseGraph && (
@@ -132,7 +154,7 @@ export const ScorecardScreen = ({
                 <Text style={styles.thSr}>SR</Text>
               </View>
               {batted.map((e) => (
-                <BattingRow key={e.playerId} entry={e} />
+                <BattingRow key={e.playerId} entry={e} highlightActive={highlightActiveBatters} />
               ))}
 
               {ytb.length > 0 && (
@@ -188,7 +210,7 @@ export const ScorecardScreen = ({
                 <Text style={styles.thSr}>SR</Text>
               </View>
               {batted.map((e) => (
-                <BattingRow key={e.playerId} entry={e} />
+                <BattingRow key={e.playerId} entry={e} highlightActive={highlightActiveBatters} />
               ))}
 
               {ytb.length > 0 && (
@@ -260,6 +282,20 @@ const styles = StyleSheet.create({
   summaryScore: { fontFamily: FONTS.display, fontSize: 42, color: COLOURS.cream, letterSpacing: 1, lineHeight: 46 },
   summaryWkts:  { color: COLOURS.red, fontSize: 32 },
   summaryOv:    { fontFamily: FONTS.mono, fontSize: SIZES.md * 1.05, color: COLOURS.dot, marginLeft: 14, marginBottom: 7 },
+  captureMetaBlock: { marginTop: SPACE.sm, gap: 4 },
+  captureMetaLine: {
+    fontFamily: FONTS.mono,
+    fontSize: SIZES.xs,
+    color: COLOURS.runs1,
+    letterSpacing: 0.6,
+    lineHeight: 17,
+  },
+  captureMetaPartnership: {
+    fontFamily: FONTS.monoMed,
+    fontSize: SIZES.xs,
+    color: COLOURS.gold,
+    letterSpacing: 0.8,
+  },
   empty:        { fontFamily: FONTS.mono, fontSize: SIZES.sm, color: COLOURS.dot, paddingHorizontal: SPACE.lg },
   scroll:       { flex: 1 },
   embedWrap:   { paddingBottom: SPACE.md },
@@ -271,6 +307,7 @@ const styles = StyleSheet.create({
   thName:       { flex: 1, textAlign: 'left', width: undefined },
   thSr:         { fontFamily: FONTS.mono, fontSize: 10, color: COLOURS.dot, width: 44, textAlign: 'right' },
   batRow:       { flexDirection: 'row', alignItems: 'center', paddingVertical: SPACE.sm, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.06)' },
+  batRowActive: { backgroundColor: 'rgba(212,160,23,0.08)' },
   batNameCol:   { flex: 1, marginRight: SPACE.sm },
   batName:      { fontFamily: FONTS.display, fontSize: SIZES.md, color: COLOURS.cream, letterSpacing: 1 },
   batOut:       { fontFamily: FONTS.mono, fontSize: 10, color: COLOURS.boundary, marginTop: 2 },

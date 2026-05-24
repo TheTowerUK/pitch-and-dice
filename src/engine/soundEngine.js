@@ -10,7 +10,10 @@ import {
   logCommentaryPoolValidation,
 } from './audio/audioAssets';
 import * as playback from './audio/audioPlayback';
+import { isDeliverySpeechEvent } from './audio/deliveryAudioSequence';
 import { cancelNewBatterFollowUp, canFireCloseCommentary, forceReleaseSpeechLane, getCommentaryUsageStats as getOrchestratorUsageStats, getSpeechLaneDebugState, maybePlayAnalystFollowUp, notifyLeadReservedForNewBatterFollowUp, playReservedPoolCommentary, queueNewBatterFollowUpAfterWicketLead, releaseSpeechIfOwned, reserveSpeechLane, resetAnalystCommentaryState, startAmbientCommentaryScheduler, stopAmbientCommentaryScheduler } from './audio/commentaryOrchestrator';
+
+export { buildDeliveryAudioSequence } from './audio/deliveryAudioSequence';
 
 export const MENU_AUDIO_PHASES = new Set(['format_select','mode_select','team_select','player_setup','setup','innings_break','match_summary']);
 export const LIVE_MATCH_AUDIO_PHASES = new Set(['batting','wicket_pending','special_event','bowler_select','field_setup','new_batsman','over_complete','innings_end','match_complete']);
@@ -286,6 +289,77 @@ const requestSpeech = async ({
     },
   );
   return true;
+};
+
+const DELIVERY_AUDIO_BREATH_MS = 550;
+const DELIVERY_FIRST_LEAD_DELAY_MS = 800;
+
+const delayMs = (ms) => new Promise((resolve) => { setTimeout(resolve, ms); });
+
+const getWicketPoolKey = (wicketType) => {
+  if (wicketType === 'BOWLED') return 'bowled';
+  if (wicketType?.startsWith('CAUGHT')) return 'caught';
+  if (wicketType === 'LBW') return 'lbw';
+  if (wicketType === 'STUMPED') return 'stumped';
+  if (wicketType === 'RUN OUT') return 'run_out';
+  return null;
+};
+
+/** Await speech reservation + clip start (or skip); used to serialize delivery commentary. */
+const requestSpeechAndWait = async ({
+  role,
+  poolKey,
+  owner,
+  delay = 0,
+  volume = 0.62,
+  allowDuringSpecial = false,
+}) => {
+  const roleEnabled = role === 'lead' ? ENABLE_LEAD_COMMENTARY : ENABLE_ANALYST_COMMENTARY;
+  if (!roleEnabled) return false;
+  if (!hasCommentaryPool(role, poolKey)) return false;
+  if (specialEventAudioMode && !allowDuringSpecial) return false;
+
+  const priorityKey = POOL_PRIORITY[poolKey] || 'general';
+  const priority = SPEECH_PRIORITY[priorityKey] || (role === 'analyst' ? SPEECH_PRIORITY.analyst : SPEECH_PRIORITY.general);
+  const lane = getSpeechLaneDebugState();
+  if (lane?.busy && (lane.priority ?? 0) >= priority) return false;
+  if (lane?.busy && (lane.priority ?? 0) < priority) {
+    await playback.stopCurrentSpeech();
+    forceReleaseSpeechLane();
+  }
+  if (!reserveSpeechLane({ owner, priority, delayMs: delay })) return false;
+  if (role === 'lead') notifyLeadReservedForNewBatterFollowUp({ owner, poolKey });
+
+  return new Promise((resolve) => {
+    playback.queueAudioTimeout(
+      async () => {
+        try {
+          if (__DEV__) console.log('[audio-speech][selected]', { role, poolKey, owner });
+          const ok = await playReservedPoolCommentary({ owner, poolKey, playback, volume, role });
+          if (__DEV__) {
+            console.log(ok ? '[audio-speech][play]' : '[audio-speech][skip]', ok
+              ? { role, poolKey, owner }
+              : { reason: 'play_failed', role, poolKey, owner });
+          }
+          resolve(ok);
+        } finally {
+          releaseSpeechIfOwned(owner);
+          if (__DEV__) console.log('[audio-speech][cleanup]', { role, poolKey, owner });
+        }
+      },
+      delay,
+      () => {
+        const allowed = playback.getPlaybackAllowed();
+        const notSpecial = allowDuringSpecial ? true : !specialEventAudioMode;
+        if (!allowed || !notSpecial) {
+          releaseSpeechIfOwned(owner);
+          resolve(false);
+          return false;
+        }
+        return true;
+      },
+    );
+  });
 };
 
 const runPool = async (poolKey, owner, delay = 0, volume = 0.62) => requestSpeech({ role: 'lead', poolKey, owner, delay, volume });
@@ -622,9 +696,185 @@ export const playSoundForWicket = (wicketType, options = {}) => {
   });
 };
 
-export const playSoundForMilestone = (runs) => {
+export const playSoundForMilestone = (runs, ballStamp = '') => {
   if (!ENABLE_LEAD_COMMENTARY) return false;
-  if (!specialEventAudioMode) runPool(runs >= 100 ? 'century' : 'fifty', `milestone:${Date.now()}`, 800, 0.63);
+  if (specialEventAudioMode) return false;
+  const owner = ballStamp ? `milestone:${ballStamp}` : `milestone:${Date.now()}`;
+  return runPool(runs >= 100 ? 'century' : 'fifty', owner, DELIVERY_FIRST_LEAD_DELAY_MS, 0.63);
+};
+
+const playMilestoneLeadAndWait = async (runs, ballStamp, { leadDelayMs = DELIVERY_FIRST_LEAD_DELAY_MS } = {}) => {
+  if (!ENABLE_LEAD_COMMENTARY || specialEventAudioMode) return false;
+  const poolKey = runs >= 100 ? 'century' : 'fifty';
+  const owner = ballStamp ? `milestone:${ballStamp}` : `milestone:${Date.now()}`;
+  return requestSpeechAndWait({ role: 'lead', poolKey, owner, delay: leadDelayMs, volume: 0.63 });
+};
+
+const playInningsEndLeadAndWait = async (ballStamp, { leadDelayMs = DELIVERY_FIRST_LEAD_DELAY_MS } = {}) => {
+  if (!ENABLE_LEAD_COMMENTARY || specialEventAudioMode) return false;
+  if (__DEV__) console.log('[commentary-debug] innings route', { pool: 'first_innings_end' });
+  const owner = ballStamp ? `inn1:${ballStamp}` : `inn1:${Date.now()}`;
+  return requestSpeechAndWait({ role: 'lead', poolKey: 'first_innings_end', owner, delay: leadDelayMs, volume: 0.63 });
+};
+
+const playMatchResultLeadAndWait = async (playerWon, ballStamp) => {
+  if (!ENABLE_LEAD_COMMENTARY || specialEventAudioMode) return false;
+  forceReleaseSpeechLane();
+  await playback.stopCurrentSpeech();
+  const pool = playerWon ? 'wins' : 'loss';
+  if (__DEV__) console.log('[commentary-debug] result route', { pool });
+  const owner = ballStamp ? `result:${ballStamp}` : `result:${Date.now()}`;
+  return requestSpeechAndWait({ role: 'lead', poolKey: pool, owner, delay: DELIVERY_FIRST_LEAD_DELAY_MS, volume: 0.63 });
+};
+
+const playWicketDeliveryStep = async (wicketType, options = {}, ballStamp = '') => {
+  if (specialEventAudioMode) return false;
+  const {
+    dismissalConfirmed = true,
+    playSfx = ENABLE_BALL_SFX,
+    playLead = ENABLE_LEAD_COMMENTARY,
+    playAnalyst = ENABLE_ANALYST_COMMENTARY,
+    newBatterRequiredInSameInnings = false,
+    newBatterAnalystBlockReason = null,
+    getNewBatterFollowUpCancelReason = null,
+  } = options;
+  const sequenceId = ballStamp ? `wicket:${ballStamp}` : `wicket:${Date.now()}:${wicketType}`;
+  if (playSfx) {
+    playback.playSfx('owzat', 1.0);
+    playback.queueAudioTimeout(() => playback.playSfx('crowd_wicketgroan', 0.65), 200);
+  }
+  let leadPlayed = false;
+  const poolKey = getWicketPoolKey(wicketType);
+  if (playLead && poolKey) {
+    if (__DEV__) console.log('[commentary-debug] wicket route', { wicketType, pool: poolKey });
+    leadPlayed = await requestSpeechAndWait({
+      role: 'lead',
+      poolKey,
+      owner: sequenceId,
+      delay: DELIVERY_FIRST_LEAD_DELAY_MS,
+      volume: 0.62,
+    });
+  }
+  if (!playAnalyst) return leadPlayed;
+  const analystContextBase = {
+    wicket: true,
+    dismissalConfirmed,
+    newBatterRequiredInSameInnings,
+    newBatterAnalystBlockReason,
+    leadDelayMs: DELIVERY_FIRST_LEAD_DELAY_MS,
+    outcome: 0,
+    overEnded: false,
+    partnershipRuns: 0,
+    ballStamp: sequenceId,
+    sequenceId,
+  };
+  if (dismissalConfirmed !== true || newBatterRequiredInSameInnings !== true) {
+    if (typeof __DEV__ !== 'undefined' && __DEV__) {
+      const sr = newBatterAnalystBlockReason || (dismissalConfirmed !== true ? 'dismissal_not_confirmed' : 'no_new_batter_required');
+      console.log(`[commentary-debug] new_batter skipped reason=${sr}`);
+    }
+    return leadPlayed;
+  }
+  const getFollowUpCancel = () => {
+    if (specialEventAudioMode) return 'special_event';
+    return getNewBatterFollowUpCancelReason?.() ?? null;
+  };
+  if (playLead) {
+    queueNewBatterFollowUpAfterWicketLead({
+      context: analystContextBase,
+      playback,
+      wicketOwner: sequenceId,
+      getCancelReason: getFollowUpCancel,
+    });
+    return leadPlayed;
+  }
+  maybePlayAnalystFollowUp({
+    context: { ...analystContextBase, leadDelayMs: 0 },
+    playback,
+  });
+  return leadPlayed;
+};
+
+const playSpecialEventDeliveryStep = async (eventKey) => {
+  if (!ENABLE_BALL_SFX || specialEventAudioMode) return false;
+  const cfg = getLockedSpecialEventConfig(eventKey);
+  const key = getSpecialLeadCommentaryKey(eventKey);
+  if (!cfg?.audioKey && !key) return false;
+  await playback.playSfx(key, 0.75);
+  return true;
+};
+
+/**
+ * Run delivery commentary in priority order (see buildDeliveryAudioSequence).
+ * @param {string[]} sequence
+ * @param {object} ctx
+ */
+export const playDeliveryAudioSequence = async (sequence, ctx = {}) => {
+  if (!Array.isArray(sequence) || !sequence.length) return;
+
+  const {
+    ballAudioStamp = '',
+    delivery = null,
+    queuedResult = null,
+    milestone = null,
+    matchResult = null,
+    wicket = null,
+    wicketOptions = {},
+    specialEventKey = null,
+    analystContext = null,
+    playOutcomeSfx = true,
+  } = ctx;
+
+  let priorSpeech = false;
+
+  for (const event of sequence) {
+    if (priorSpeech && isDeliverySpeechEvent(event)) {
+      await delayMs(DELIVERY_AUDIO_BREATH_MS);
+    }
+
+    const leadDelayMs = priorSpeech ? 0 : DELIVERY_FIRST_LEAD_DELAY_MS;
+    let stepSpeech = false;
+
+    switch (event) {
+      case 'match_result': {
+        const playerWon = matchResult?.playerWon ?? matchResult === true;
+        stepSpeech = await playMatchResultLeadAndWait(playerWon, ballAudioStamp);
+        break;
+      }
+      case 'milestone': {
+        if (delivery && playOutcomeSfx) playSfxForOutcome(delivery);
+        const runs = milestone?.runs ?? milestone;
+        stepSpeech = await playMilestoneLeadAndWait(runs, `${ballAudioStamp}:${runs}`, { leadDelayMs });
+        break;
+      }
+      case 'wicket': {
+        const wicketType = wicket?.type ?? wicket;
+        stepSpeech = await playWicketDeliveryStep(wicketType, wicketOptions, ballAudioStamp);
+        break;
+      }
+      case 'special_event': {
+        const eventKey = specialEventKey
+          || (typeof ctx.specialEvent === 'string' ? ctx.specialEvent : ctx.specialEvent?.eventKey);
+        stepSpeech = await playSpecialEventDeliveryStep(eventKey);
+        break;
+      }
+      case 'innings_end': {
+        stepSpeech = await playInningsEndLeadAndWait(ballAudioStamp, { leadDelayMs });
+        break;
+      }
+      case 'outcome': {
+        if (delivery && queuedResult) {
+          const result = await playSoundForOutcome(delivery, queuedResult, analystContext);
+          stepSpeech = result?.leadHandoff === 'completed';
+        }
+        break;
+      }
+      default:
+        break;
+    }
+
+    if (stepSpeech) priorSpeech = true;
+  }
 };
 
 export const playSoundForDRS = (overturned) => {
@@ -683,10 +933,11 @@ export const playSoundForMatchResult = (playerWon) => {
 };
 
 export const handoffMenuAfterTieResult = () => {};
-export const playSoundForFirstInningsEnd = () => {
+export const playSoundForFirstInningsEnd = (ballStamp = '') => {
   if (!ENABLE_LEAD_COMMENTARY) return false;
   if (__DEV__) console.log('[commentary-debug] innings route', { pool: 'first_innings_end' });
-  return runPool('first_innings_end', `inn1:${Date.now()}`, 800, 0.63);
+  const owner = ballStamp ? `inn1:${ballStamp}` : `inn1:${Date.now()}`;
+  return runPool('first_innings_end', owner, DELIVERY_FIRST_LEAD_DELAY_MS, 0.63);
 };
 export const playSoundForChaseStart = (matchSnapshot = {}) => {
   if (!ENABLE_LEAD_COMMENTARY) return false;

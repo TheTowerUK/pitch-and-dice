@@ -2,13 +2,18 @@
 //  GameScreen.js — Phase 4 with Teams + Squads
 // ═══════════════════════════════════════════════════════
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   View, ScrollView, StyleSheet, StatusBar,
-  TouchableOpacity, Text, AppState,
+  TouchableOpacity, Text, AppState, useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLOURS, FONTS, SIZES, SPACE, FORMATS, getFormatScoreboardLabel } from '../constants/theme';
+import {
+  COMPACT_PITCH_FLEX,
+  COMPACT_DICE_FLEX,
+  getMatchStageMetrics,
+} from '../constants/compactMatchLayout';
 import { useGameState }         from '../engine/useGameState';
 import { WORLD_TEAMS }          from '../engine/teamsData';
 import { FormatSelectScreen }   from './FormatSelectScreen';
@@ -23,11 +28,17 @@ import { Scoreboard }           from '../components/Scoreboard';
 import { OverBalls }            from '../components/OverBalls';
 import { MomentumBar }          from '../components/MomentumBar';
 import { PlayerCard }           from '../components/PlayerCard';
-import { OutcomeDisplay }       from '../components/OutcomeDisplay';
+import { CompactStageResultPanel } from '../components/CompactStageResultPanel';
 import { AIDecisionBanner }     from '../components/AIDecisionBanner';
 import { ShotSelector }         from '../components/ShotSelector';
 import { BowlingSelector }      from '../components/BowlingSelector';
 import { FieldSummaryStrip }    from '../components/FieldSummaryStrip';
+import {
+  FieldPitchDiagram,
+  buildFieldVisualEvent,
+  getFieldVisualPressureState,
+} from '../components/FieldPitchDiagram';
+import { DiceResultPanel }      from '../components/DiceResultPanel';
 import { RollButton }           from '../components/RollButton';
 import { Commentary }           from '../components/Commentary';
 import { WicketModal }          from '../components/WicketModal';
@@ -38,9 +49,9 @@ import { SpecialEventModal }    from '../components/SpecialEventModal';
 import { InningsModal }         from '../components/InningsModal';
 import { PauseOverlay }         from '../components/PauseOverlay';
 import { MilestoneModal }       from '../components/MilestoneModal';
-import { DiceRollAnimation }    from '../components/DiceRollAnimation';
 import { buildMatchSummary, isResumableInProgressMatch } from '../engine/storageEngine';
-import { playSoundForOutcome, playSfxForOutcome, playSoundForWicket, playSoundForSpecialEvent, checkCloseGameCommentary, stopMusic, isAudioEnabled, playSoundForMatchResult, playSoundForFirstInningsEnd, playSoundForChaseStart, stopMatchSounds, playSoundForMilestone, enterSpecialEventAudioMode, exitSpecialEventAudioMode, setMatchGamePhaseForAudioResume, syncBaseAudioForState, LIVE_MATCH_AUDIO_PHASES, handoffMenuAfterTieResult, updateGeneralCommentaryState, getCurrentSpeechKey, isCommentaryClipPlaying, isSpeechLaneBusyForUi, resetScreenshotStudioAudioState } from '../engine/soundEngine';
+import { buildDeliveryAudioSequence } from '../engine/audio/deliveryAudioSequence';
+import { playSfxForOutcome, playSoundForWicket, playSoundForSpecialEvent, checkCloseGameCommentary, stopMusic, isAudioEnabled, playSoundForMatchResult, playSoundForChaseStart, stopMatchSounds, playDeliveryAudioSequence, enterSpecialEventAudioMode, exitSpecialEventAudioMode, setMatchGamePhaseForAudioResume, syncBaseAudioForState, LIVE_MATCH_AUDIO_PHASES, handoffMenuAfterTieResult, updateGeneralCommentaryState, getCurrentSpeechKey, isCommentaryClipPlaying, isSpeechLaneBusyForUi, resetScreenshotStudioAudioState } from '../engine/soundEngine';
 import {
   ENABLE_SCREENSHOT_STUDIO,
   getScreenshotPreset,
@@ -177,10 +188,36 @@ export const GameScreen = ({
   const [showDiceAnim,   setShowDiceAnim]  = useState(false);
   const [showPauseHelp,  setShowPauseHelp] = useState(false);
   const [resumeOffered,  setResumeOffered] = useState(false);
+  const [matchDetailsExpanded, setMatchDetailsExpanded] = useState(false);
+  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
+  const stageMetrics = useMemo(
+    () => getMatchStageMetrics(windowWidth, windowHeight),
+    [windowWidth, windowHeight],
+  );
+  const fieldPressureState = useMemo(
+    () => (state ? getFieldVisualPressureState(state) : null),
+    [
+      state.innings,
+      state.target,
+      state.runs,
+      state.balls,
+      state.wickets,
+      state.format,
+      state.momentum,
+      state.recentBalls,
+      state.lastPressureIndex,
+    ],
+  );
+  const fieldVisualEvent = useMemo(() => {
+    const deliveryId = `${state.innings}-${state.balls}`;
+    return buildFieldVisualEvent(state.lastOutcome, deliveryId);
+  }, [state.lastOutcome, state.innings, state.balls]);
   const wasSpecialEventMode = useRef(false);
   const previousGamePhase = useRef(state.gamePhase);
   const hasMounted = useRef(false);
   const lastHandledResultKeyRef = useRef(null);
+  const skipMatchEndEffectRef = useRef(false);
+  const deliverySequencerHandledWicketRef = useRef(false);
   const prevWicketsRef = useRef(state.wickets);
   const deliveryLockTimerRef = useRef(null);
   const playingLockStartedAtRef = useRef(0);
@@ -278,7 +315,7 @@ export const GameScreen = ({
     }
   }, [deliveryActionPhase, state.deliveryPhase, state.pendingOutcome, releaseDeliveryLock]);
 
-  const presentMatchEndResult = useCallback((resultState, finalOutcome = null) => {
+  const presentMatchEndResult = useCallback((resultState, finalOutcome = null, { skipAudio = false } = {}) => {
     if (__DEV__) {
       console.log(
         `[match-end] resolve innings=${resultState?.innings} runs=${resultState?.runs} target=${resultState?.target} balls=${resultState?.balls} wickets=${resultState?.wickets}`
@@ -303,9 +340,9 @@ export const GameScreen = ({
     if (__DEV__) {
       console.log(`[match-end] outcome=${outcome.key} dedupe=${dedupeContext}`);
     }
-    if (outcome.key === 'chase_win') {
+    if (!skipAudio && outcome.key === 'chase_win') {
       playSoundForMatchResult(true, dedupeContext);
-    } else if (outcome.key === 'defending_win') {
+    } else if (!skipAudio && outcome.key === 'defending_win') {
       playSoundForMatchResult(false, dedupeContext);
     } else {
       // Tie: explicit text commentary, no dedicated tie VO pool yet.
@@ -358,8 +395,12 @@ export const GameScreen = ({
     return () => subscription.remove();
   }, [state.gamePhase, flushCurrentMatch]);
 
-  // Wicket sounds — fire when phase enters wicket_pending
+  // Wicket sounds — fire when phase enters wicket_pending (skipped when delivery sequencer handled wicket)
   useEffect(() => {
+    if (deliverySequencerHandledWicketRef.current) {
+      deliverySequencerHandledWicketRef.current = false;
+      return;
+    }
     if (state.gamePhase === 'wicket_pending' && state.lastWicket) {
       const maxBalls = (FORMATS[state.format]?.overs ?? 20) * 6;
       const analystCtx = getWicketAudioNewBatterAnalystContext(state, maxBalls);
@@ -464,6 +505,7 @@ export const GameScreen = ({
 
   // Unified match-end result presentation (text + audio), reused by all branches.
   useEffect(() => {
+    if (skipMatchEndEffectRef.current) return;
     if (!state.pendingInningsEnd || state.innings !== 2) return;
     const resultKey = `${state.innings}-${state.balls}-${state.runs}-${state.wickets}-${state.target ?? 0}`;
     if (lastHandledResultKeyRef.current === resultKey) return;
@@ -564,6 +606,7 @@ export const GameScreen = ({
         chaseTarget={state.innings === 2 ? state.target : null}
         chaseLabel1={state.innings1Stats?.teamName}
         chaseLabel2={state.battingSquad?.teamName}
+        captureMeta={state.captureMode ? state.scorecardCaptureMeta : null}
       />
     );
   }
@@ -623,180 +666,341 @@ export const GameScreen = ({
       : 'ROLL';
   const showShotSelector    = isManual || isBatting;
   const showBowlingSelector = isManual || isBowling;
+  const tacticalDisabled    = deliveryActionPhase !== 'ready';
+  const layoutCompact = true;
+  const stageLarge = stageMetrics.large;
+  const compactStageSideBySide = windowWidth >= 340;
+  const showDiceLayer = showDiceAnim && !!state.pendingOutcome;
+
+  const renderStatusBadges = () => (
+    <>
+      {state.gamePhase === 'special_event' && state.pendingEvent?.key === 'no_ball' && (
+        <View style={styles.noBallBadge}>
+          <Text style={styles.noBallText}>NO BALL — FREE HIT AWARDED</Text>
+        </View>
+      )}
+    </>
+  );
+
+  const handleRollComplete = async () => {
+    const delivery = state.pendingOutcome;
+    const queuedResult = state.queuedResult;
+    const queuedAudio = state.queuedAudio;
+
+    if (!delivery || !queuedResult) {
+      setShowDiceAnim(false);
+      releaseDeliveryLock();
+      return;
+    }
+    if (state.gamePhase === 'special_event' || state.deliveryPhase === 'special_event') {
+      setShowDiceAnim(false);
+      releaseDeliveryLock();
+      return;
+    }
+    beginDeliveryPlayingLock();
+
+    let closeCmtFired = false;
+    if (queuedResult.innings === 2 && queuedResult.target) {
+      closeCmtFired = checkCloseGameCommentary(queuedResult);
+    }
+    const qrPhase = queuedResult?.gamePhase;
+    const shouldPlayOutcomeCommentary =
+      qrPhase !== 'wicket_pending'
+      && qrPhase !== 'special_event'
+      && (state.gamePhase === 'batting' || qrPhase === 'batting' || qrPhase === 'over_complete');
+    const ballAudioStamp = `${queuedResult?.innings ?? 0}:${queuedResult?.balls ?? 0}`;
+    const matchResultOutcome = queuedAudio?.pendingInningsEnd && queuedResult.innings === 2
+      ? resolveMatchResult(queuedResult)
+      : null;
+    const matchResultAudio = matchResultOutcome && matchResultOutcome.key !== 'tie'
+      ? { playerWon: matchResultOutcome.playerWon }
+      : null;
+    const wicketOnDelivery = delivery?.type === 'wicket';
+    const lastWicket = wicketOnDelivery ? (queuedResult?.lastWicket ?? state.lastWicket) : null;
+    const maxBalls = (FORMATS[state.format]?.overs ?? 20) * 6;
+    const wicketStateSnapshot = {
+      ...state,
+      gamePhase: qrPhase,
+      wickets: queuedResult?.wickets ?? state.wickets,
+      balls: queuedResult?.balls ?? state.balls,
+      pendingInningsEnd: !!queuedAudio?.pendingInningsEnd,
+    };
+    const wicketAnalystCtx = lastWicket
+      ? getWicketAudioNewBatterAnalystContext(wicketStateSnapshot, maxBalls)
+      : {};
+    const willFinalizeMatchEnd = !!(queuedAudio?.pendingInningsEnd && queuedResult.innings === 2);
+
+    const sequence = buildDeliveryAudioSequence({
+      matchResult: matchResultAudio,
+      milestone: queuedAudio?.pendingMilestone || null,
+      wicket: lastWicket ? { type: lastWicket.type } : null,
+      inningsEnd: !!(queuedAudio?.pendingInningsEnd && queuedResult.innings === 1),
+      specialEvent: null,
+      outcome: shouldPlayOutcomeCommentary
+        && !closeCmtFired
+        && !queuedAudio?.pendingMilestone
+        && !wicketOnDelivery
+        && !matchResultAudio,
+    });
+
+    deliverySequencerHandledWicketRef.current = sequence.includes('wicket');
+    if (willFinalizeMatchEnd) skipMatchEndEffectRef.current = true;
+
+    commitPendingDelivery();
+
+    await playDeliveryAudioSequence(sequence, {
+      ballAudioStamp,
+      delivery,
+      queuedResult,
+      milestone: queuedAudio?.pendingMilestone || null,
+      matchResult: matchResultAudio,
+      wicket: lastWicket,
+      wicketOptions: {
+        dismissalConfirmed: !lastWicket?.drs,
+        getNewBatterFollowUpCancelReason: getWicketNewBatterFollowUpCancelReason,
+        ...wicketAnalystCtx,
+      },
+      analystContext: {
+        overEnded: queuedResult?.gamePhase === 'over_complete',
+        lastStrikeChangeReason: queuedResult?.lastStrikeChangeReason,
+        partnershipRuns: queuedResult?.currentPartnershipRuns,
+        ballStamp: `${ballAudioStamp}:${delivery?.runs ?? 0}`,
+        strikeRotatedForRuns: queuedResult?.strikeRotatedForRuns,
+      },
+    });
+
+    if (closeCmtFired && shouldPlayOutcomeCommentary
+      && !sequence.includes('milestone') && !sequence.includes('outcome')) {
+      playSfxForOutcome(delivery);
+    }
+
+    if (queuedAudio?.pendingInningsEnd && queuedResult.innings === 1) {
+      setTimeout(() => { commitInningsEnd(); }, 2400);
+    }
+
+    if (willFinalizeMatchEnd) {
+      skipMatchEndEffectRef.current = false;
+      const resultKey = `${queuedResult.innings}-${queuedResult.balls}-${queuedResult.runs}-${queuedResult.wickets}-${queuedResult.target ?? 0}`;
+      lastHandledResultKeyRef.current = resultKey;
+      presentMatchEndResult(queuedResult, delivery, { skipAudio: sequence.includes('match_result') });
+      setTimeout(() => { commitInningsEnd(); }, 2400);
+    }
+    setShowDiceAnim(false);
+    await releaseDeliveryPlayingLock();
+  };
+
+  const renderActionControls = () => (
+    <>
+      {showShotSelector && (
+        <ShotSelector
+          selectedShot={state.selectedShot}
+          selectedAggression={state.selectedAggression}
+          onSelectShot={selectShot}
+          onSelectAggression={selectAggression}
+          compact={layoutCompact}
+          stageLarge={stageLarge}
+          disabled={tacticalDisabled}
+        />
+      )}
+
+      {showBowlingSelector && (
+        <BowlingSelector
+          selectedBowling={state.selectedBowling}
+          onSelectBowling={selectBowling}
+          compact={layoutCompact}
+          stageLarge={stageLarge}
+          disabled={tacticalDisabled}
+        />
+      )}
+
+      {state.freeHit && (
+        <View style={[styles.freeHitBanner, layoutCompact && styles.freeHitBannerCompact]}>
+          <Text style={[styles.freeHitText, layoutCompact && styles.freeHitTextCompact]}>
+            FREE HIT — BONUS BALL · NO WICKET
+          </Text>
+        </View>
+      )}
+
+      <RollButton
+        selectedShot={state.selectedShot}
+        onRoll={() => {
+          beginDeliveryLock('rolling');
+          rollBall();
+        }}
+        disabled={!canTriggerRoll}
+        statusLabel={rollButtonStatusLabel}
+        gameMode={gameMode}
+        compact={layoutCompact}
+        stageLarge={stageLarge}
+      />
+
+      <AIDecisionBanner aiDecision={state.aiDecision} gameMode={gameMode} />
+
+      <FieldSummaryStrip
+        field={state.field}
+        label={isBatting ? 'AI FIELD' : 'CURRENT FIELD'}
+        onEditPress={() => setShowFieldEdit(true)}
+        showEdit={isManual}
+        compact={layoutCompact}
+      />
+
+      {state.battingSquad && (
+        <TouchableOpacity
+          style={[styles.scorecardBtn, layoutCompact && styles.scorecardBtnCompact]}
+          onPress={() => setShowScorecard(true)}
+        >
+          <Text style={styles.scorecardBtnText}>📋 VIEW SCORECARD</Text>
+        </TouchableOpacity>
+      )}
+    </>
+  );
+
+  const scoreboardProps = {
+    runs: state.runs,
+    wickets: state.wickets,
+    overDisplay,
+    ballsRemaining,
+    formatLabel: getFormatScoreboardLabel(state.format),
+    innings: state.innings,
+    target: state.target,
+    rrr,
+    pressureTier,
+    bowler: state.bowler,
+    battingSquad: state.battingSquad,
+    bowlingSquad: state.bowlingSquad,
+    batters: state.batters,
+    battingOrder: state.battingOrder,
+    players: state.players,
+    strikerIndex: state.strikerIndex,
+    nonStrikerIndex: state.nonStrikerIndex,
+    onHistoryPress: () => setShowHistory(true),
+    onPausePress: () => setShowPause(true),
+    compact: layoutCompact,
+    stageLarge,
+    showOverComplete: state.gamePhase === 'over_complete',
+  };
 
   return (
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="light-content" backgroundColor={COLOURS.ink} />
 
       <View style={styles.top}>
-        <Scoreboard
-          runs={state.runs}
-          wickets={state.wickets}
-          overDisplay={overDisplay}
-          ballsRemaining={ballsRemaining}
-          formatLabel={getFormatScoreboardLabel(state.format)}
-          innings={state.innings}
-          target={state.target}
-          rrr={rrr}
-          pressureTier={pressureTier}
-          bowler={state.bowler}
-          battingSquad={state.battingSquad}
-          bowlingSquad={state.bowlingSquad}
-          batters={state.batters}
-          battingOrder={state.battingOrder}
-          players={state.players}
-          strikerIndex={state.strikerIndex}
-          nonStrikerIndex={state.nonStrikerIndex}
-          captureMode={!!state.captureMode}
-          onHistoryPress={() => setShowHistory(true)} onPausePress={() => setShowPause(true)}
-        />
-        <OverBalls overBalls={state.overBalls} />
-        {state.gamePhase === 'special_event' && state.pendingEvent?.key === 'no_ball' && (
-          <View style={styles.noBallBadge}>
-            <Text style={styles.noBallText}>NO BALL — FREE HIT AWARDED</Text>
-          </View>
-        )}
-        {state.gamePhase === 'over_complete' && (
-          <View style={styles.overCompleteBadge}>
-            <Text style={styles.overCompleteText}>OVER COMPLETE</Text>
-          </View>
-        )}
+        <Scoreboard {...scoreboardProps} />
+        <OverBalls overBalls={state.overBalls} compact={layoutCompact} stageLarge={stageLarge} />
+        {renderStatusBadges()}
         <MomentumBar
           momentum={state.momentum}
           tier={momentumTier}
           pressureTier={pressureTier}
-          captureMode={!!state.captureMode}
-        />
-        <PlayerCard
-          batsman={state.batsman} bowler={state.bowler}
-          battingSquad={state.battingSquad} bowlingSquad={state.bowlingSquad}
+          compact={layoutCompact}
+          stageLarge={stageLarge}
         />
       </View>
 
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-
-        <DiceRollAnimation
-          visible={showDiceAnim && !!state.pendingOutcome}
-          sides={state.pendingOutcome?.effectiveSides || 6}
-          finalRoll={state.pendingOutcome?.clampedRoll || 1}
-          dieLabel={state.pendingOutcome?.dieLabel || 'D6'}
-          shotLabel={state.selectedShot?.toUpperCase() || 'WORK'}
-          onComplete={async () => {
-            const delivery = state.pendingOutcome;
-            const queuedResult = state.queuedResult;
-            const queuedAudio = state.queuedAudio;
-
-            if (!delivery || !queuedResult) {
-              setShowDiceAnim(false);
-              releaseDeliveryLock();
-              return;
-            }
-            if (state.gamePhase === 'special_event' || state.deliveryPhase === 'special_event') {
-              setShowDiceAnim(false);
-              releaseDeliveryLock();
-              return;
-            }
-            beginDeliveryPlayingLock();
-            // Commit state only after animation completion.
-            commitPendingDelivery();
-
-            let closeCmtFired = false;
-            if (queuedResult.innings === 2 && queuedResult.target) {
-              closeCmtFired = checkCloseGameCommentary(queuedResult);
-            }
-            const qrPhase = queuedResult?.gamePhase;
-            const shouldPlayOutcomeCommentary =
-              qrPhase !== 'wicket_pending'
-              && qrPhase !== 'special_event'
-              && (state.gamePhase === 'batting' || qrPhase === 'batting' || qrPhase === 'over_complete');
-            if (shouldPlayOutcomeCommentary) {
-              // Priority order: milestone > close > normal outcome
-              if (queuedAudio?.pendingMilestone) {
-                // Milestone just crossed — play SFX only, commentary replaced by milestone call
-                playSfxForOutcome(delivery);
-                playSoundForMilestone(
-                  queuedAudio.pendingMilestone.runs,
-                  `${queuedResult.balls}-${queuedResult.innings}-${queuedAudio.pendingMilestone.runs}`,
-                );
-              } else if (closeCmtFired) {
-                playSfxForOutcome(delivery);
-              } else {
-                await playSoundForOutcome(delivery, queuedResult, {
-                  overEnded: queuedResult?.gamePhase === 'over_complete',
-                  lastStrikeChangeReason: queuedResult?.lastStrikeChangeReason,
-                  partnershipRuns: queuedResult?.currentPartnershipRuns,
-                  ballStamp: `${queuedResult?.innings ?? 0}:${queuedResult?.balls ?? 0}:${delivery?.runs ?? 0}`,
-                  strikeRotatedForRuns: queuedResult?.strikeRotatedForRuns,
-                });
-              }
-            }
-            // If this ball ended the innings, the centralized pendingInningsEnd
-            // effect handles result presentation and end transition.
-            if (queuedAudio?.pendingInningsEnd) {
-              if (queuedResult.innings === 1) {
-                playSoundForFirstInningsEnd(queuedResult);
-                setTimeout(() => { commitInningsEnd(); }, 2400);
-              }
-            }
-            setShowDiceAnim(false);
-            await releaseDeliveryPlayingLock();
-          }}
-        />
-
-        {/* Last Ball + stats: committed match state only. pendingOutcome drives DiceRollAnimation only. */}
-        <OutcomeDisplay
-          outcome={state.lastOutcome}
-          stats={{ balls: state.balls, boundaries: state.boundaries, sixes: state.sixes, dots: state.dots }}
-        />
-
-        {showShotSelector && (
-          <ShotSelector
-            selectedShot={state.selectedShot} selectedAggression={state.selectedAggression}
-            onSelectShot={selectShot} onSelectAggression={selectAggression}
-            captureMode={!!state.captureMode}
-          />
-        )}
-
-        {showBowlingSelector && (
-          <BowlingSelector selectedBowling={state.selectedBowling} onSelectBowling={selectBowling} />
-        )}
-
-        {state.freeHit && (
-          <View style={styles.freeHitBanner}>
-            <Text style={styles.freeHitText}>FREE HIT — BONUS BALL · NO WICKET</Text>
+      <>
+          <View
+            style={[
+              styles.compactMain,
+              {
+                paddingHorizontal: stageMetrics.mainPaddingH,
+                paddingTop: stageMetrics.mainPaddingTop,
+              },
+            ]}
+          >
+            <Commentary
+              commentary={state.commentary}
+              compact
+              compactHeight={stageMetrics.commentaryHeight}
+              stageLarge={stageLarge}
+            />
+            <View
+              style={[
+                styles.compactStage,
+                { minHeight: stageMetrics.stageMinHeight, gap: stageMetrics.stageGap },
+                compactStageSideBySide ? styles.compactStageRow : styles.compactStageColumn,
+              ]}
+            >
+              <View
+                style={[
+                  styles.compactPitchWrap,
+                  { padding: stageMetrics.pitchPadding, borderRadius: stageMetrics.pitchBorderRadius },
+                  compactStageSideBySide ? styles.compactPitchWrapSide : styles.compactPitchWrapStacked,
+                ]}
+              >
+                <FieldPitchDiagram
+                  field={state.field}
+                  fill
+                  showTitle
+                  bowlingType={state.selectedBowling}
+                  gamePhase={state.gamePhase}
+                  pressureState={fieldPressureState}
+                  visualEvent={fieldVisualEvent}
+                />
+              </View>
+              <DiceResultPanel
+                fill
+                style={[
+                  styles.compactDiceWrap,
+                  compactStageSideBySide ? styles.compactDiceWrapSide : styles.compactDiceWrapStacked,
+                ]}
+              >
+                <View style={styles.compactDiceSlot}>
+                  <CompactStageResultPanel
+                    isRolling={showDiceLayer}
+                    pendingOutcome={state.pendingOutcome}
+                    lastOutcome={state.lastOutcome}
+                    shotLabel={state.selectedShot?.toUpperCase() || 'WORK'}
+                    onRollComplete={handleRollComplete}
+                    captureMode={!!state.captureMode}
+                  />
+                </View>
+              </DiceResultPanel>
+            </View>
           </View>
-        )}
 
-        <RollButton
-          selectedShot={state.selectedShot}
-          onRoll={() => {
-            beginDeliveryLock('rolling');
-            rollBall();
-          }}
-          disabled={!canTriggerRoll}
-          statusLabel={rollButtonStatusLabel}
-          gameMode={gameMode}
-          captureMode={!!state.captureMode}
-        />
-
-        <AIDecisionBanner aiDecision={state.aiDecision} gameMode={gameMode} />
-
-        <FieldSummaryStrip
-          field={state.field}
-          label={isBatting ? 'AI FIELD' : 'CURRENT FIELD'}
-          onEditPress={() => setShowFieldEdit(true)}
-          showEdit={isManual}
-        />
-
-        {state.battingSquad && (
-          <TouchableOpacity style={styles.scorecardBtn} onPress={() => setShowScorecard(true)}>
-            <Text style={styles.scorecardBtnText}>📋 VIEW SCORECARD</Text>
-          </TouchableOpacity>
-        )}
-
-        <Commentary commentary={state.commentary} />
-      </ScrollView>
+          <View
+            style={[
+              styles.compactBottomPanel,
+              {
+                maxHeight: stageMetrics.bottomPanelMaxHeight,
+                paddingTop: stageMetrics.bottomPanelPaddingTop,
+                paddingBottom: stageMetrics.bottomPanelPaddingBottom,
+              },
+            ]}
+          >
+            <TouchableOpacity
+              style={[styles.matchDetailsToggle, { marginHorizontal: stageMetrics.matchDetailsMarginH }]}
+              onPress={() => setMatchDetailsExpanded((open) => !open)}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.matchDetailsToggleText}>
+                {matchDetailsExpanded ? '▾ MATCH DETAILS' : '▸ MATCH DETAILS'}
+              </Text>
+            </TouchableOpacity>
+            {matchDetailsExpanded && (
+              <View style={styles.matchDetailsBody}>
+                <PlayerCard
+                  batsman={state.batsman}
+                  bowler={state.bowler}
+                  battingSquad={state.battingSquad}
+                  bowlingSquad={state.bowlingSquad}
+                />
+              </View>
+            )}
+            <ScrollView
+              style={styles.compactBottomScroll}
+              contentContainerStyle={[
+                styles.compactBottomScrollContent,
+                { paddingHorizontal: stageMetrics.bottomScrollPaddingH },
+              ]}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+              nestedScrollEnabled
+            >
+              {renderActionControls()}
+            </ScrollView>
+          </View>
+      </>
 
       <SpecialEventModal
         visible={state.gamePhase === 'special_event'}
@@ -854,14 +1058,104 @@ export const GameScreen = ({
 const styles = StyleSheet.create({
   safe:          { flex: 1, backgroundColor: COLOURS.slate },
   top:           { backgroundColor: COLOURS.ink },
-  scroll:        { flex: 1 },
-  scrollContent: { flexGrow: 1, paddingBottom: 24 },
+  compactMain: {
+    flex: 1,
+    minHeight: 0,
+  },
+  compactStage: {
+    flex: 1,
+    flexGrow: 1,
+    flexShrink: 1,
+    width: '100%',
+    alignItems: 'stretch',
+  },
+  compactStageRow: {
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  compactStageColumn: {
+    flexDirection: 'column',
+  },
+  compactPitchWrap: {
+    flex: 1,
+    alignSelf: 'stretch',
+    backgroundColor: COLOURS.ink,
+    borderWidth: 1,
+    borderColor: 'rgba(212,160,23,0.18)',
+    overflow: 'hidden',
+    minHeight: 0,
+  },
+  compactPitchWrapSide: {
+    flex: COMPACT_PITCH_FLEX,
+    marginBottom: 0,
+  },
+  compactPitchWrapStacked: {
+    flex: 1,
+    marginBottom: SPACE.xs,
+  },
+  compactDiceWrap: {
+    flex: 1,
+    alignSelf: 'stretch',
+    minWidth: 0,
+    minHeight: 0,
+  },
+  compactDiceWrapSide: {
+    flex: COMPACT_DICE_FLEX,
+  },
+  compactDiceWrapStacked: {
+    flex: 1,
+  },
+  compactDiceSlot: {
+    flex: 1,
+    alignSelf: 'stretch',
+    width: '100%',
+  },
+  compactBottomPanel: {
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(212,160,23,0.22)',
+    backgroundColor: COLOURS.ink,
+  },
+  matchDetailsToggle: {
+    marginBottom: SPACE.xs,
+    paddingVertical: SPACE.xs,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 3,
+    backgroundColor: COLOURS.slate,
+  },
+  matchDetailsToggleText: {
+    fontFamily: FONTS.mono,
+    fontSize: SIZES.xs,
+    color: COLOURS.dot,
+    letterSpacing: 2,
+  },
+  matchDetailsBody: {
+    marginBottom: SPACE.xs,
+  },
+  compactBottomScroll: {
+    flexGrow: 0,
+  },
+  compactBottomScrollContent: {
+    paddingBottom: SPACE.xs,
+  },
   freeHitBanner: {
     backgroundColor: 'rgba(240,192,64,0.15)', borderWidth: 1, borderColor: COLOURS.gold,
     marginHorizontal: SPACE.lg, marginBottom: SPACE.sm, padding: SPACE.sm,
     alignItems: 'center', borderRadius: 3,
   },
   freeHitText: { fontFamily: FONTS.display, fontSize: SIZES.md, color: COLOURS.gold, letterSpacing: 2 },
+  freeHitBannerCompact: {
+    marginHorizontal: SPACE.md,
+    marginBottom: SPACE.xs,
+    paddingVertical: SPACE.xs,
+  },
+  freeHitTextCompact: {
+    fontSize: SIZES.xs,
+    letterSpacing: 1,
+  },
   noBallBadge: {
     alignSelf: 'center',
     marginTop: 4,
@@ -879,29 +1173,17 @@ const styles = StyleSheet.create({
     color: COLOURS.gold,
     letterSpacing: 2,
   },
-  overCompleteBadge: {
-    alignSelf: 'center',
-    marginTop: 4,
-    marginBottom: 6,
-    paddingHorizontal: SPACE.md,
-    paddingVertical: 4,
-    borderWidth: 1,
-    borderColor: 'rgba(212,160,23,0.35)',
-    borderRadius: 3,
-    backgroundColor: 'rgba(212,160,23,0.08)',
-  },
-  overCompleteText: {
-    fontFamily: FONTS.mono,
-    fontSize: SIZES.xs,
-    color: COLOURS.dot,
-    letterSpacing: 3,
-  },
   scorecardBtn: {
     marginHorizontal: SPACE.lg, marginBottom: SPACE.sm, paddingVertical: SPACE.sm,
     alignItems: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
     borderRadius: 3, backgroundColor: COLOURS.ink,
   },
   scorecardBtnText: { fontFamily: FONTS.mono, fontSize: SIZES.xs, color: COLOURS.dot, letterSpacing: 2 },
+  scorecardBtnCompact: {
+    marginHorizontal: SPACE.md,
+    marginBottom: 0,
+    paddingVertical: SPACE.xs,
+  },
   resumeScreen: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: SPACE.xxl, backgroundColor: COLOURS.slate },
   resumeTitle: { fontFamily: FONTS.display, fontSize: 36, letterSpacing: 5, color: COLOURS.gold, marginBottom: SPACE.md },
   resumeFmt: {
