@@ -11,7 +11,7 @@ Pitch & Dice is a single-player cricket dice game for iOS and Android. You choos
 
 Pitch & Dice does not collect personal data. The app does not ask for your name, email address, phone number, location, contacts, photos, or other identifying information, and it does not send that kind of information to us.
 
-Gameplay progress and preferences are stored only on your device for app functionality. They are not uploaded to our servers.
+Gameplay progress, match history, and audio preferences are stored only on your device for app functionality and are not transmitted to us or shared with third parties.
 
 ## Accounts
 
